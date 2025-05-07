@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mild Symptoms - CureWise</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        .footer {
+      background-color: #F3F4F6;
+      padding: 2rem 1rem;
+      text-align: center;
+      color: #4B5563;
+    }
+        #flash-response {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+        }
+        :root {
+            --primary-green: #22C55E;
+            --background-mint: #F0FDF4;
+            --text-dark: #111827;
+            --text-gray: #6B7280;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background-mint);
+        }
+        .header {
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .logo {
+            color: var(--primary-green);
+            font-weight: bold;
+        }
+        .main-content {
+            padding: 2rem;
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .prediction-block {
+            margin-bottom: 1.5rem;
+        }
+        .prediction-block h4 {
+            color: var(--primary-green);
+        }
+        .prediction-block p {
+            color: var(--text-gray);
+        }
+    </style>
+</head>
+<body>
+<header class="header py-3">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <a href="{{ url_for('index') }}" class="logo text-decoration-none">
+                    <i class="fas fa-heartbeat me-2"></i>CureWise
+                </a>
+                <nav>
+                    <a href="{{ url_for('severity_selection') }}" class="btn btn-outline-primary me-2">Back to Severity Selection</a>
+                    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">Back to Home</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <h1 class="mb-4 text-center">Mild Symptoms</h1>
+            <div class="card p-4">
+                <form id="symptom-form">
+                    <div id="symptom-fields">
+                        <!-- Symptom fields will be dynamically added here -->
+                    </div>
+                    <button type="submit" class="btn btn-primary mt-3">Submit</button>
+                </form>
+                <div id="prediction-result" class="mt-4"></div>
+                <div id="flash-response" style="display: none;"></div>
+            </div>
+
+        </div>
+
+    </main>
+<footer class="footer">
+    <div class="container">
+      <p>&copy; 2024 CureWise. All rights reserved.</p>
+      <p>
+       <a href="static/CureWise_Terms_of_Service.pdf">Terms of Service</a> |
+        <a href="static/CureWise_Privacy_Policy.pdf">Privacy Policy</a>
+      </p>
+    </div>
+  </footer>
+<script>
+    const symptomOptions = [
+  "Abdominal bloating", "Abdominal cramps", "Abdominal pain", "Acid reflux",
+  "Blackheads", "Bleeding", "Bleeding from nose", "Blisters", "Bloating",
+  "Burning sensation", "Burping", "Cavities", "Chest pain", "Congestion",
+  "Cracking skin", "Cramping", "Crust formation", "Crusting", "Dark urine",
+  "Dehydration", "Diarrhea", "Difficulty breathing", "Difficulty eating",
+  "Difficulty passing stool", "Difficulty swallowing", "Discharge",
+  "Discolored patches", "Discomfort", "Dizziness", "Dry mouth", "Dryness",
+  "Ear pain", "Excess gas", "Fatigue", "Fever", "Flaky scalp", "Hard bumps",
+  "Hard stool", "Headache", "Hearing loss", "Heartburn", "Hoarseness",
+  "Infection", "Inflammation", "Itching", "Itchy eyes", "Itchy scalp",
+  "Itchy welts", "Lightheadedness", "Loose stools", "Loss of appetite",
+  "Loss of taste", "Mouth sores", "Nausea", "Nits on hair", "Pain",
+  "Pain while eating", "Pain while walking", "Painful bump", "Painful lump",
+  "Painful sores", "Peeling skin", "Pimples", "Prickly sensation",
+  "Pus formation", "Rectal pain", "Red bumps", "Red edges", "Red patches",
+  "Red rash", "Redness", "Rough texture", "Runny nose", "Scaling",
+  "Scalp redness", "Scarring", "Scratching", "Sensitivity", "Sinus pressure",
+  "Sneezing", "Soreness", "Straining", "Stuffy nose", "Sweating", "Swelling",
+  "Tenderness", "Thickened skin", "Thirst", "Toothache", "Urgency",
+  "Vomiting", "Warmth", "Watery discharge", "Watery eyes", "White patches",
+  "Whiteheads"
+];
+
+const diseaseSymptomMap = {
+    "Acne": [
+        ['Blackheads', 'Inflammation', 'Pimples'],
+        ['Blackheads', 'Inflammation', 'Whiteheads'],
+        ['Pimples', 'Scarring', 'Whiteheads'],
+        ['Inflammation', 'Pimples', 'Whiteheads'],
+        ['Blackheads', 'Pimples', 'Scarring'],
+        ['Blackheads', 'Pimples', 'Whiteheads'],
+        ['Inflammation', 'Pimples', 'Scarring'],
+        ['Blackheads', 'Scarring', 'Whiteheads'],
+        ['Inflammation', 'Scarring', 'Whiteheads'],
+        ['Blackheads', 'Inflammation', 'Scarring'],
+    ],
+    "Allergic rhinitis": [
+        ['Itchy eyes', 'Runny nose', 'Sneezing'],
+        ['Itchy eyes', 'Runny nose', 'Watery eyes'],
+        ['Congestion', 'Runny nose', 'Watery eyes'],
+        ['Congestion', 'Itchy eyes', 'Runny nose'],
+        ['Congestion', 'Runny nose', 'Sneezing'],
+        ['Runny nose', 'Sneezing', 'Watery eyes'],
+        ['Itchy eyes', 'Sneezing', 'Watery eyes'],
+        ['Congestion', 'Itchy eyes', 'Sneezing'],
+        ['Congestion', 'Itchy eyes', 'Watery eyes'],
+        ['Congestion', 'Sneezing', 'Watery eyes'],
+    ],
+    "Athlete’s foot": [
+        ['Cracking skin', 'Itching', 'Redness'],
+        ['Cracking skin', 'Peeling skin', 'Redness'],
+        ['Blisters', 'Itching', 'Peeling skin'],
+        ['Cracking skin', 'Itching', 'Peeling skin'],
+        ['Blisters', 'Peeling skin', 'Redness'],
+        ['Blisters', 'Cracking skin', 'Redness'],
+        ['Itching', 'Peeling skin', 'Redness'],
+        ['Blisters', 'Itching', 'Redness'],
+        ['Blisters', 'Cracking skin', 'Peeling skin'],
+        ['Blisters', 'Cracking skin', 'Itching'],
+    ],
+    "Boils": [
+        ['Fever', 'Painful lump', 'Pus formation'],
+        ['Fever', 'Pus formation', 'Redness'],
+        ['Painful lump', 'Pus formation', 'Redness'],
+        ['Painful lump', 'Redness', 'Swelling'],
+        ['Fever', 'Painful lump', 'Swelling'],
+        ['Fever', 'Painful lump', 'Redness'],
+        ['Pus formation', 'Redness', 'Swelling'],
+        ['Painful lump', 'Pus formation', 'Swelling'],
+        ['Fever', 'Pus formation', 'Swelling'],
+        ['Fever', 'Redness', 'Swelling'],
+    ],
+    "Canker sores": [
+        ['Burning sensation', 'Difficulty eating', 'Painful sores'],
+        ['Difficulty eating', 'Red edges', 'Swelling'],
+        ['Burning sensation', 'Painful sores', 'Red edges'],
+        ['Painful sores', 'Red edges', 'Swelling'],
+        ['Difficulty eating', 'Painful sores', 'Swelling'],
+        ['Burning sensation', 'Red edges', 'Swelling'],
+        ['Burning sensation', 'Difficulty eating', 'Red edges'],
+        ['Difficulty eating', 'Painful sores', 'Red edges'],
+        ['Burning sensation', 'Difficulty eating', 'Swelling'],
+        ['Burning sensation', 'Painful sores', 'Swelling'],
+    ],
+    "Conjunctivitis": [
+        ['Crust formation', 'Redness', 'Watery discharge'],
+        ['Crust formation', 'Swelling', 'Watery discharge'],
+        ['Itchy eyes', 'Redness', 'Swelling'],
+        ['Crust formation', 'Redness', 'Swelling'],
+        ['Crust formation', 'Itchy eyes', 'Watery discharge'],
+        ['Redness', 'Swelling', 'Watery discharge'],
+        ['Crust formation', 'Itchy eyes', 'Swelling'],
+        ['Itchy eyes', 'Redness', 'Watery discharge'],
+        ['Crust formation', 'Itchy eyes', 'Redness'],
+        ['Itchy eyes', 'Swelling', 'Watery discharge'],
+    ],
+    "Constipation": [
+        ['Abdominal pain', 'Difficulty passing stool', 'Straining'],
+        ['Abdominal pain', 'Difficulty passing stool', 'Hard stool'],
+        ['Abdominal pain', 'Bloating', 'Hard stool'],
+        ['Abdominal pain', 'Bloating', 'Difficulty passing stool'],
+        ['Abdominal pain', 'Bloating', 'Straining'],
+        ['Bloating', 'Hard stool', 'Straining'],
+        ['Bloating', 'Difficulty passing stool', 'Straining'],
+        ['Abdominal pain', 'Hard stool', 'Straining'],
+        ['Bloating', 'Difficulty passing stool', 'Hard stool'],
+    ],
+    "Corns and calluses": [
+        ['Dryness', 'Hard bumps', 'Pain while walking'],
+        ['Hard bumps', 'Pain while walking', 'Thickened skin'],
+        ['Dryness', 'Pain while walking', 'Tenderness'],
+        ['Hard bumps', 'Tenderness', 'Thickened skin'],
+        ['Dryness', 'Hard bumps', 'Thickened skin'],
+        ['Dryness', 'Hard bumps', 'Tenderness'],
+        ['Dryness', 'Pain while walking', 'Thickened skin'],
+        ['Pain while walking', 'Tenderness', 'Thickened skin'],
+        ['Dryness', 'Tenderness', 'Thickened skin'],
+    ],
+    "Dandruff": [
+        ['Crusting', 'Itchy scalp', 'Scalp redness'],
+        ['Crusting', 'Flaky scalp', 'Itchy scalp'],
+        ['Dryness', 'Flaky scalp', 'Scalp redness'],
+        ['Crusting', 'Dryness', 'Scalp redness'],
+        ['Crusting', 'Dryness', 'Itchy scalp'],
+        ['Flaky scalp', 'Itchy scalp', 'Scalp redness'],
+        ['Crusting', 'Dryness', 'Flaky scalp'],
+        ['Dryness', 'Itchy scalp', 'Scalp redness'],
+        ['Crusting', 'Flaky scalp', 'Scalp redness'],
+        ['Dryness', 'Flaky scalp', 'Itchy scalp'],
+    ],
+    "Dehydration": [
+        ['Dark urine', 'Fatigue', 'Thirst'],
+        ['Dizziness', 'Fatigue', 'Thirst'],
+        ['Dry mouth', 'Fatigue', 'Thirst'],
+        ['Dark urine', 'Dry mouth', 'Thirst'],
+        ['Dizziness', 'Dry mouth', 'Fatigue'],
+        ['Dark urine', 'Dizziness', 'Dry mouth'],
+        ['Dark urine', 'Dizziness', 'Thirst'],
+        ['Dizziness', 'Dry mouth', 'Thirst'],
+        ['Dark urine', 'Dizziness', 'Fatigue'],
+    ],
+    "Dermatitis": [
+        ['Blisters', 'Itching', 'Swelling'],
+        ['Cracking skin', 'Red Red rash', 'Swelling'],
+        ['Cracking skin', 'Itching', 'Red Red rash'],
+        ['Blisters', 'Itching', 'Red Red rash'],
+        ['Itching', 'Red Red rash', 'Swelling'],
+        ['Blisters', 'Cracking skin', 'Swelling'],
+        ['Cracking skin', 'Itching', 'Swelling'],
+        ['Blisters', 'Cracking skin', 'Red Red rash'],
+        ['Blisters', 'Red Red rash', 'Swelling'],
+        ['Blisters', 'Cracking skin', 'Itching'],
+    ],
+    "Diarrhea": [
+        ['Abdominal cramps', 'Fatigue', 'Loose stools'],
+        ['Abdominal cramps', 'Dehydration', 'Urgency'],
+        ['Abdominal cramps', 'Dehydration', 'Fatigue'],
+        ['Fatigue', 'Loose stools', 'Urgency'],
+        ['Dehydration', 'Fatigue', 'Loose stools'],
+        ['Abdominal cramps', 'Fatigue', 'Urgency'],
+        ['Dehydration', 'Fatigue', 'Urgency'],
+        ['Dehydration', 'Loose stools', 'Urgency'],
+        ['Abdominal cramps', 'Loose stools', 'Urgency'],
+    ],
+    "Ear infection": [
+        ['Ear pain', 'Fever', 'Swelling'],
+        ['Discharge', 'Ear pain', 'Fever'],
+        ['Discharge', 'Fever', 'Hearing loss'],
+        ['Ear pain', 'Hearing loss', 'Swelling'],
+        ['Discharge', 'Fever', 'Swelling'],
+        ['Discharge', 'Ear pain', 'Swelling'],
+        ['Fever', 'Hearing loss', 'Swelling'],
+        ['Discharge', 'Hearing loss', 'Swelling'],
+        ['Ear pain', 'Fever', 'Hearing loss'],
+    ],
+    "Flatulence": [
+        ['Burping', 'Discomfort', 'Excess gas'],
+        ['Abdominal bloating', 'Cramping', 'Discomfort'],
+        ['Cramping', 'Discomfort', 'Excess gas'],
+        ['Abdominal bloating', 'Burping', 'Excess gas'],
+        ['Abdominal bloating', 'Burping', 'Cramping'],
+        ['Burping', 'Cramping', 'Excess gas'],
+        ['Abdominal bloating', 'Burping', 'Discomfort'],
+        ['Abdominal bloating', 'Cramping', 'Excess gas'],
+        ['Burping', 'Cramping', 'Discomfort'],
+        ['Abdominal bloating', 'Discomfort', 'Excess gas'],
+    ],
+    "Food poisoning": [
+        ['Diarrhea', 'Nausea', 'Vomiting'],
+        ['Abdominal pain', 'Diarrhea', 'Vomiting'],
+        ['Diarrhea', 'Fever', 'Nausea'],
+        ['Abdominal pain', 'Diarrhea', 'Nausea'],
+        ['Abdominal pain', 'Fever', 'Nausea'],
+        ['Fever', 'Nausea', 'Vomiting'],
+        ['Diarrhea', 'Fever', 'Vomiting'],
+        ['Abdominal pain', 'Diarrhea', 'Fever'],
+        ['Abdominal pain', 'Fever', 'Vomiting'],
+        ['Abdominal pain', 'Nausea', 'Vomiting'],
+    ],
+    "Fungal infections": [
+        ['Cracking skin', 'Itching', 'Redness'],
+        ['Cracking skin', 'Redness', 'Scaling'],
+        ['Blisters', 'Cracking skin', 'Redness'],
+        ['Cracking skin', 'Itching', 'Scaling'],
+        ['Blisters', 'Cracking skin', 'Scaling'],
+        ['Blisters', 'Itching', 'Redness'],
+        ['Blisters', 'Itching', 'Scaling'],
+        ['Blisters', 'Redness', 'Scaling'],
+        ['Itching', 'Redness', 'Scaling'],
+        ['Blisters', 'Cracking skin', 'Itching'],
+    ],
+    "Gastritis": [
+        ['Abdominal pain', 'Bloating', 'Nausea'],
+        ['Abdominal pain', 'Bloating', 'Heartburn'],
+        ['Abdominal pain', 'Heartburn', 'Vomiting'],
+        ['Bloating', 'Heartburn', 'Vomiting'],
+        ['Abdominal pain', 'Bloating', 'Vomiting'],
+        ['Abdominal pain', 'Heartburn', 'Nausea'],
+        ['Abdominal pain', 'Nausea', 'Vomiting'],
+        ['Bloating', 'Nausea', 'Vomiting'],
+        ['Bloating', 'Heartburn', 'Nausea'],
+        ['Heartburn', 'Nausea', 'Vomiting'],
+    ],
+    "Hand, foot and mouth disease": [
+        ['Fever', 'Loss of appetite', 'Red rash'],
+        ['Fever', 'Mouth sores', 'Red rash'],
+        ['Blisters', 'Loss of appetite', 'Mouth sores'],
+        ['Blisters', 'Fever', 'Loss of appetite'],
+        ['Blisters', 'Fever', 'Mouth sores'],
+        ['Blisters', 'Mouth sores', 'Red rash'],
+        ['Loss of appetite', 'Mouth sores', 'Red rash'],
+        ['Blisters', 'Fever', 'Red rash'],
+        ['Fever', 'Loss of appetite', 'Mouth sores'],
+    ],
+    "Heartburn": [
+        ['Acid reflux', 'Chest pain', 'Difficulty swallowing'],
+        ['Chest pain', 'Difficulty swallowing', 'Nausea'],
+        ['Burning sensation', 'Difficulty swallowing', 'Nausea'],
+        ['Acid reflux', 'Difficulty swallowing', 'Nausea'],
+        ['Acid reflux', 'Burning sensation', 'Nausea'],
+        ['Acid reflux', 'Burning sensation', 'Chest pain'],
+        ['Burning sensation', 'Chest pain', 'Difficulty swallowing'],
+        ['Acid reflux', 'Burning sensation', 'Difficulty swallowing'],
+        ['Acid reflux', 'Chest pain', 'Nausea'],
+        ['Burning sensation', 'Chest pain', 'Nausea'],
+    ],
+    "Heat rash": [
+        ['Blisters', 'Itching', 'Red bumps'],
+        ['Itching', 'Prickly sensation', 'Red bumps'],
+        ['Prickly sensation', 'Red bumps', 'Sweating'],
+        ['Itching', 'Red bumps', 'Sweating'],
+        ['Blisters', 'Itching', 'Prickly sensation'],
+        ['Blisters', 'Red bumps', 'Sweating'],
+        ['Blisters', 'Prickly sensation', 'Red bumps'],
+        ['Itching', 'Prickly sensation', 'Sweating'],
+        ['Blisters', 'Prickly sensation', 'Sweating'],
+        ['Blisters', 'Itching', 'Sweating'],
+    ],
+    "Hemorrhoids": [
+        ['Discomfort', 'Itching', 'Rectal pain'],
+        ['Bleeding', 'Discomfort', 'Rectal pain'],
+        ['Bleeding', 'Rectal pain', 'Swelling'],
+        ['Bleeding', 'Itching', 'Swelling'],
+        ['Discomfort', 'Rectal pain', 'Swelling'],
+        ['Itching', 'Rectal pain', 'Swelling'],
+        ['Discomfort', 'Itching', 'Swelling'],
+        ['Bleeding', 'Discomfort', 'Itching'],
+        ['Bleeding', 'Discomfort', 'Swelling'],
+        ['Bleeding', 'Itching', 'Rectal pain'],
+    ],
+    "Hives": [
+        ['Burning sensation', 'Fever', 'Itchy welts'],
+        ['Burning sensation', 'Itchy welts', 'Swelling'],
+        ['Itchy welts', 'Red patches', 'Swelling'],
+        ['Fever', 'Itchy welts', 'Swelling'],
+        ['Burning sensation', 'Fever', 'Swelling'],
+        ['Burning sensation', 'Fever', 'Red patches'],
+        ['Burning sensation', 'Red patches', 'Swelling'],
+        ['Fever', 'Red patches', 'Swelling'],
+        ['Fever', 'Itchy welts', 'Red patches'],
+        ['Burning sensation', 'Itchy welts', 'Red patches'],
+    ],
+    "Indigestion": [
+        ['Abdominal pain', 'Burping', 'Nausea'],
+        ['Abdominal pain', 'Bloating', 'Nausea'],
+        ['Abdominal pain', 'Bloating', 'Heartburn'],
+        ['Bloating', 'Burping', 'Heartburn'],
+        ['Bloating', 'Burping', 'Nausea'],
+        ['Burping', 'Heartburn', 'Nausea'],
+        ['Abdominal pain', 'Heartburn', 'Nausea'],
+        ['Bloating', 'Heartburn', 'Nausea'],
+        ['Abdominal pain', 'Bloating', 'Burping'],
+    ],
+    "Ingrown toenails": [
+        ['Pain', 'Swelling', 'Tenderness'],
+        ['Infection', 'Pain', 'Redness'],
+        ['Pain', 'Redness', 'Swelling'],
+        ['Infection', 'Swelling', 'Tenderness'],
+        ['Pain', 'Redness', 'Tenderness'],
+        ['Infection', 'Redness', 'Tenderness'],
+        ['Infection', 'Pain', 'Tenderness'],
+        ['Infection', 'Redness', 'Swelling'],
+        ['Redness', 'Swelling', 'Tenderness'],
+        ['Infection', 'Pain', 'Swelling'],
+    ],
+    "Jock itch": [
+        ['Burning sensation', 'Redness', 'Scaling'],
+        ['Blisters', 'Burning sensation', 'Redness'],
+        ['Burning sensation', 'Itching', 'Scaling'],
+        ['Blisters', 'Itching', 'Redness'],
+        ['Blisters', 'Itching', 'Scaling'],
+        ['Blisters', 'Redness', 'Scaling'],
+        ['Itching', 'Redness', 'Scaling'],
+        ['Burning sensation', 'Itching', 'Redness'],
+        ['Blisters', 'Burning sensation', 'Itching'],
+        ['Blisters', 'Burning sensation', 'Scaling'],
+    ],
+    "Lice infestation": [
+        ['Itching', 'Nits on hair', 'Red bumps'],
+        ['Itching', 'Nits on hair', 'Scalp redness'],
+        ['Itching', 'Scalp redness', 'Scratching'],
+        ['Red bumps', 'Scalp redness', 'Scratching'],
+        ['Nits on hair', 'Red bumps', 'Scalp redness'],
+        ['Itching', 'Nits on hair', 'Scratching'],
+        ['Nits on hair', 'Scalp redness', 'Scratching'],
+        ['Itching', 'Red bumps', 'Scratching'],
+        ['Nits on hair', 'Red bumps', 'Scratching'],
+    ],
+    "Mild sunburn": [
+        ['Peeling skin', 'Redness', 'Swelling'],
+        ['Pain', 'Redness', 'Swelling'],
+        ['Pain', 'Swelling', 'Warmth'],
+        ['Redness', 'Swelling', 'Warmth'],
+        ['Peeling skin', 'Redness', 'Warmth'],
+        ['Pain', 'Redness', 'Warmth'],
+        ['Pain', 'Peeling skin', 'Warmth'],
+        ['Pain', 'Peeling skin', 'Redness'],
+        ['Pain', 'Peeling skin', 'Swelling'],
+    ],
+    "Nasal congestion": [
+        ['Runny nose', 'Sinus pressure', 'Stuffy nose'],
+        ['Difficulty breathing', 'Runny nose', 'Sinus pressure'],
+        ['Difficulty breathing', 'Runny nose', 'Stuffy nose'],
+        ['Runny nose', 'Sneezing', 'Stuffy nose'],
+        ['Difficulty breathing', 'Sinus pressure', 'Sneezing'],
+        ['Difficulty breathing', 'Runny nose', 'Sneezing'],
+        ['Difficulty breathing', 'Sinus pressure', 'Stuffy nose'],
+        ['Difficulty breathing', 'Sneezing', 'Stuffy nose'],
+        ['Runny nose', 'Sinus pressure', 'Sneezing'],
+        ['Sinus pressure', 'Sneezing', 'Stuffy nose'],
+    ],
+    "Nosebleeds": [
+        ['Crusting', 'Dryness', 'Headache'],
+        ['Dryness', 'Headache', 'Lightheadedness'],
+        ['Crusting', 'Headache', 'Lightheadedness'],
+        ['Bleeding from nose', 'Crusting', 'Lightheadedness'],
+        ['Bleeding from nose', 'Dryness', 'Lightheadedness'],
+        ['Bleeding from nose', 'Dryness', 'Headache'],
+        ['Bleeding from nose', 'Headache', 'Lightheadedness'],
+        ['Crusting', 'Dryness', 'Lightheadedness'],
+        ['Bleeding from nose', 'Crusting', 'Headache'],
+        ['Bleeding from nose', 'Crusting', 'Dryness'],
+    ],
+    "Oral thrush": [
+        ['Difficulty swallowing', 'Loss of taste', 'White patches'],
+        ['Redness', 'Soreness', 'White patches'],
+        ['Loss of taste', 'Soreness', 'White patches'],
+        ['Difficulty swallowing', 'Loss of taste', 'Soreness'],
+        ['Difficulty swallowing', 'Loss of taste', 'Redness'],
+        ['Loss of taste', 'Redness', 'White patches'],
+        ['Difficulty swallowing', 'Redness', 'White patches'],
+        ['Difficulty swallowing', 'Redness', 'Soreness'],
+        ['Difficulty swallowing', 'Soreness', 'White patches'],
+        ['Loss of taste', 'Redness', 'Soreness'],
+    ],
+    "Pityriasis versicolor": [
+        ['Itching', 'Peeling skin', 'Scaling'],
+        ['Discolored patches', 'Dryness', 'Itching'],
+        ['Dryness', 'Itching', 'Scaling'],
+        ['Dryness', 'Peeling skin', 'Scaling'],
+        ['Dryness', 'Itching', 'Peeling skin'],
+        ['Discolored patches', 'Peeling skin', 'Scaling'],
+        ['Discolored patches', 'Dryness', 'Scaling'],
+        ['Discolored patches', 'Itching', 'Peeling skin'],
+        ['Discolored patches', 'Itching', 'Scaling'],
+    ],
+    "Sore throat": [
+        ['Pain', 'Redness', 'Swelling'],
+        ['Difficulty swallowing', 'Hoarseness', 'Swelling'],
+        ['Hoarseness', 'Pain', 'Redness'],
+        ['Hoarseness', 'Redness', 'Swelling'],
+        ['Difficulty swallowing', 'Pain', 'Swelling'],
+        ['Difficulty swallowing', 'Hoarseness', 'Pain'],
+        ['Difficulty swallowing', 'Hoarseness', 'Redness'],
+        ['Difficulty swallowing', 'Pain', 'Redness'],
+        ['Difficulty swallowing', 'Redness', 'Swelling'],
+        ['Hoarseness', 'Pain', 'Swelling'],
+    ],
+    "Styes": [
+        ['Redness', 'Swelling', 'Tenderness'],
+        ['Discharge', 'Redness', 'Swelling'],
+        ['Painful bump', 'Redness', 'Tenderness'],
+        ['Painful bump', 'Redness', 'Swelling'],
+        ['Discharge', 'Painful bump', 'Swelling'],
+        ['Discharge', 'Swelling', 'Tenderness'],
+        ['Discharge', 'Redness', 'Tenderness'],
+        ['Discharge', 'Painful bump', 'Redness'],
+        ['Painful bump', 'Swelling', 'Tenderness'],
+        ['Discharge', 'Painful bump', 'Tenderness'],
+    ],
+    "Tooth decay": [
+        ['Discolored patches', 'Sensitivity', 'Toothache'],
+        ['Cavities', 'Pain while eating', 'Sensitivity'],
+        ['Cavities', 'Discolored patches', 'Pain while eating'],
+        ['Cavities', 'Discolored patches', 'Sensitivity'],
+        ['Pain while eating', 'Sensitivity', 'Toothache'],
+        ['Cavities', 'Discolored patches', 'Toothache'],
+        ['Discolored patches', 'Pain while eating', 'Sensitivity'],
+        ['Cavities', 'Pain while eating', 'Toothache'],
+        ['Cavities', 'Sensitivity', 'Toothache'],
+        ['Discolored patches', 'Pain while eating', 'Toothache'],
+    ],
+    "Warts": [
+        ['Bleeding', 'Hard bumps', 'Pain'],
+        ['Bleeding', 'Itching', 'Rough texture'],
+        ['Hard bumps', 'Itching', 'Rough texture'],
+        ['Bleeding', 'Hard bumps', 'Rough texture'],
+        ['Bleeding', 'Hard bumps', 'Itching'],
+        ['Bleeding', 'Pain', 'Rough texture'],
+        ['Hard bumps', 'Itching', 'Pain'],
+        ['Itching', 'Pain', 'Rough texture'],
+        ['Hard bumps', 'Pain', 'Rough texture'],
+    ],
+};
+
+const symptomLimit = 3;
+
+// Add styles for related symptoms highlighting
+const styleElement = document.createElement('style');
+styleElement.textContent = `
+    @keyframes relatedPulse {
+        0% { background-color: #e3f2fd; }
+        50% { background-color: #bbdefb; }
+        100% { background-color: #e3f2fd; }
+    }
+
+    .symptom-option-related {
+        background: linear-gradient(45deg, #e3f2fd, #bbdefb);
+        font-weight: bold;
+        color: #1565c0;
+        padding: 8px;
+        border-left: 4px solid #1565c0;
+        margin: 2px 0;
+        animation: relatedPulse 2s infinite;
+    }
+
+    datalist option {
+        padding: 4px;
+        margin: 2px 0;
+    }
+`;
+document.head.appendChild(styleElement);
+
+function updateSymptomFields() {
+    // First, verify the container exists
+    const symptomFields = document.getElementById('symptom-fields');
+    if (!symptomFields) {
+        console.error('Symptom fields container not found');
+        return;
+    }
+
+    // Clear existing fields
+    symptomFields.innerHTML = '';
+
+    // Create the symptom input fields
+    for (let i = 0; i < symptomLimit; i++) {
+        const datalistId = `symptom-datalist-${i}`;
+        const fieldDiv = document.createElement('div');
+        fieldDiv.className = 'mb-3';
+        fieldDiv.innerHTML = `
+            <label for="symptom${i + 1}" class="form-label">Symptom ${i + 1}</label>
+            <input type="text"
+                   class="form-control symptom-input"
+                   id="symptom${i + 1}"
+                   name="symptoms[]"
+                   list="${datalistId}"
+                   placeholder="Search and select a symptom"
+                   required>
+            <datalist id="${datalistId}">
+                ${symptomOptions.map(symptom => `<option value="${symptom}">${symptom}</option>`).join('')}
+            </datalist>
+            <small class="text-danger invalid-symptom-message" style="display: none">Please select a valid symptom</small>
+        `;
+        symptomFields.appendChild(fieldDiv);
+    }
+
+    const symptomInputs = document.querySelectorAll('.symptom-input');
+
+    // Function to get related symptoms for a given symptom
+    function getRelatedSymptoms(symptom) {
+        if (!symptom) return [];
+
+        const relatedSymptoms = new Set();
+        Object.entries(diseaseSymptomMap).forEach(([disease, symptomSets]) => {
+            symptomSets.forEach(symptomSet => {
+                if (symptomSet.some(s => s.toLowerCase() === symptom.toLowerCase())) {
+                    symptomSet.forEach(s => relatedSymptoms.add(s));
+                }
+            });
+        });
+        return Array.from(relatedSymptoms);
+    }
+
+    // Function to get currently selected symptoms
+    function getSelectedSymptoms() {
+        return Array.from(symptomInputs)
+            .map(input => input.value.trim())
+            .filter(Boolean)
+            .map(s => s.toLowerCase());
+    }
+
+    // Function to update dropdown options
+    function updateDropdownOptions(input, relatedSymptomsList) {
+        const datalist = input.nextElementSibling;
+        const selectedSymptoms = getSelectedSymptoms();
+
+        // Filter out already selected symptoms
+        relatedSymptomsList = relatedSymptomsList.filter(s =>
+            !selectedSymptoms.includes(s.toLowerCase())
+        );
+
+        const otherSymptoms = symptomOptions.filter(s =>
+            !relatedSymptomsList.includes(s) &&
+            !selectedSymptoms.includes(s.toLowerCase())
+        );
+
+        // Update datalist content
+        datalist.innerHTML = [
+            ...relatedSymptomsList.map(symptom => `
+                <option value="${symptom}" class="symptom-option-related">★ ${symptom} (Related)</option>
+            `),
+            ...otherSymptoms.map(symptom => `
+                <option value="${symptom}">${symptom}</option>
+            `)
+        ].join('');
+    }
+
+    // Add event listeners to each input
+    symptomInputs.forEach((input, index) => {
+        // Focus event
+        input.addEventListener('focus', function() {
+            const selectedSymptoms = getSelectedSymptoms();
+
+            if (index === 0) {
+                // First field shows all symptoms except selected ones
+                const datalist = this.nextElementSibling;
+                datalist.innerHTML = symptomOptions
+                    .filter(s => !selectedSymptoms.includes(s.toLowerCase()))
+                    .map(symptom => `<option value="${symptom}">${symptom}</option>`)
+                    .join('');
+            } else if (index === 1) {
+                // Second field shows symptoms related to first input
+                const firstSymptom = symptomInputs[0].value.trim();
+                const relatedSymptoms = getRelatedSymptoms(firstSymptom);
+                updateDropdownOptions(this, relatedSymptoms);
+            } else if (index === 2) {
+                // Third field shows combined related symptoms
+                const firstSymptom = symptomInputs[0].value.trim();
+                const secondSymptom = symptomInputs[1].value.trim();
+                const firstRelated = getRelatedSymptoms(firstSymptom);
+                const secondRelated = getRelatedSymptoms(secondSymptom);
+                const combinedRelated = Array.from(new Set([...firstRelated, ...secondRelated]));
+                updateDropdownOptions(this, combinedRelated);
+            }
+        });
+
+        // Input event for validation
+        input.addEventListener('input', function() {
+            const currentValue = this.value.trim();
+            const symptomMessage = this.nextElementSibling.nextElementSibling;
+            const selectedSymptoms = getSelectedSymptoms();
+
+            const isValid = symptomOptions.map(s => s.toLowerCase()).includes(currentValue.toLowerCase());
+            const isDuplicate = selectedSymptoms.filter(s => s === currentValue.toLowerCase()).length > 1;
+
+            if (currentValue !== '' && (!isValid || isDuplicate)) {
+                this.classList.add('is-invalid');
+                symptomMessage.style.display = 'block';
+                symptomMessage.textContent = isDuplicate ?
+                    'This symptom has already been selected' :
+                    'Please select a valid symptom';
+            } else {
+                this.classList.remove('is-invalid');
+                symptomMessage.style.display = 'none';
+            }
+
+            // Update subsequent fields
+            if (isValid && !isDuplicate) {
+                if (index === 0 && symptomInputs[1]) {
+                    const relatedSymptoms = getRelatedSymptoms(currentValue);
+                    updateDropdownOptions(symptomInputs[1], relatedSymptoms);
+                } else if (index === 1 && symptomInputs[2]) {
+                    const firstSymptom = symptomInputs[0].value.trim();
+                    const firstRelated = getRelatedSymptoms(firstSymptom);
+                    const secondRelated = getRelatedSymptoms(currentValue);
+                    const combinedRelated = Array.from(new Set([...firstRelated, ...secondRelated]));
+                    updateDropdownOptions(symptomInputs[2], combinedRelated);
+                }
+            }
+        });
+    });
+}
+
+// Initialize when the DOM is loaded
+document.addEventListener('DOMContentLoaded', updateSymptomFields);
+
+
+// Typing effect and form submission code remains the same as in previous script
+    // Add animation styles for typing effect
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes typing {
+        from { width: 0 }
+        to { width: 100% }
+    }
+    @keyframes blink-caret {
+        from, to { border-color: transparent }
+        50% { border-color: black }
+    }
+    .typing-effect {
+        overflow: hidden;
+        border-right: .15em solid black;
+        white-space: nowrap;
+        animation:
+            typing 2s steps(40, end),
+            blink-caret .75s step-end infinite;
+    }
+`;
+document.head.appendChild(style);
+
+// Typing effect function
+function typeWriter(element, text, speed = 20) {
+    element.innerHTML = '';
+    let i = 0;
+    function type() {
+        if (i < text.length) {
+            element.innerHTML += text.charAt(i);
+            i++;
+            setTimeout(type, speed);
+        }
+    }
+    type();
+}
+
+// Submit the symptoms form
+const symptomForm = document.getElementById('symptom-form');
+const flashResponse = document.getElementById('flash-response');
+
+symptomForm.addEventListener("submit", function (event) {
+    event.preventDefault();
+
+    const formData = new FormData(symptomForm);
+    const symptoms = formData.getAll("symptoms[]").map(s => s.trim());
+
+    // Validate that all symptoms are from the predefined list
+    const validSymptoms = symptoms.filter(symptom => symptomOptions.includes(symptom));
+
+    if (validSymptoms.length !== symptomLimit) {
+        alert(`Please select exactly ${symptomLimit} symptoms from the provided list.`);
+        return;
+    }
+
+    flashResponse.style.display = "block";
+    flashResponse.innerHTML = `
+        <div class="alert alert-info">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <span>Generating predictions...</span>
+        </div>
+    `;
+
+    fetch("/submit_symptoms", {
+        method: "POST",
+        body: JSON.stringify({ severity: "1", symptoms: validSymptoms }),
+        headers: { "Content-Type": "application/json" }
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+                const predictionsHtml = data.data.map(prediction => `
+                    <div class="prediction-block">
+                        <h4 id="disease-${Math.random().toString(36).substr(2, 9)}"></h4>
+                        <p id="description-${Math.random().toString(36).substr(2, 9)}"></p>
+                    </div>
+                `).join('');
+
+                flashResponse.innerHTML = `<div class="alert alert-success"><h4>Disease Prediction</h4>${predictionsHtml}</div>`;
+
+                // Type out each prediction
+                data.data.forEach((prediction, index) => {
+                    const diseaseElement = document.querySelectorAll('.prediction-block h4')[index];
+                    const descriptionElement = document.querySelectorAll('.prediction-block p')[index];
+
+                    typeWriter(diseaseElement, prediction.disease);
+
+                    setTimeout(() => {
+                        typeWriter(descriptionElement, prediction.description);
+                    }, prediction.disease.length * 50 + 500);
+                });
+            } else {
+                flashResponse.innerHTML = `<div class="alert alert-warning"><p>${data.error || "No disease could be predicted."}</p></div>`;
+            }
+
+            // Show warning after displaying results
+            showWarning();
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            flashResponse.innerHTML = `<div class="alert alert-danger"><p>An error occurred. Please try again.</p></div>`;
+        });
+});
+
+function showWarning() {
+    alert("Warning: The model and data are still under development. Please consult a healthcare professional before following any medical advice.");
+}
+    </script>
+</body>
+</html>

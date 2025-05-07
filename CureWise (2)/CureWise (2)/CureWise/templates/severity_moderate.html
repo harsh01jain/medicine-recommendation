@@ -1,0 +1,2023 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moderate Symptoms - CureWise</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-blue: #1E40AF;
+            --background-blue: #EFF6FF;
+            --text-dark: #111827;
+            --text-gray: #6B7280;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background-blue);
+        }
+        .header {
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .logo {
+            color: var(--primary-blue);
+            font-weight: bold;
+        }
+        .main-content {
+            padding: 2rem;
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(30, 64, 175, 0.1);
+            border: 2px solid var(--primary-blue);
+        }
+        .btn-primary {
+            background-color: var(--primary-blue);
+            border-color: var(--primary-blue);
+        }
+        .btn-primary:hover {
+            background-color: #1E3A8A;
+            border-color: #1E3A8A;
+        }
+        #symptom-fields label,
+        #symptom-fields input {
+            color: var(--text-dark);
+        }
+        .alert {
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <header class="header py-3">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <a href="{{ url_for('index') }}" class="logo text-decoration-none">
+                    <i class="fas fa-heartbeat me-2"></i>CureWise
+                </a>
+                <nav>
+                    <a href="{{ url_for('severity_selection') }}" class="btn btn-outline-primary me-2">Back to Severity Selection</a>
+                    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">Back to Home</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <h1 class="mb-4 text-center">Moderate Symptoms</h1>
+            <div class="card p-4">
+                <form id="symptom-form">
+                    <div id="symptom-fields">
+                        <!-- Symptom fields will be dynamically added here -->
+                    </div>
+                    <button type="submit" class="btn btn-primary mt-3">Submit</button>
+                </form>
+                <div id="flash-response" style="display: none;"></div>
+                <div id="prediction-result" class="mt-4"></div>
+            </div>
+        </div>
+    </main>
+<footer class="footer">
+    <div class="container">
+      <p>&copy; 2024 CureWise. All rights reserved.</p>
+      <p>
+       <a href="static/CureWise_Terms_of_Service.pdf">Terms of Service</a> |
+        <a href="static/CureWise_Privacy_Policy.pdf">Privacy Policy</a>
+      </p>
+    </div>
+  </footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    const symptomOptions = [
+  "Abdominal bloating",
+  "Abdominal cramps",
+  "Abdominal discomfort",
+  "Abdominal pain",
+  "Abdominal rigidity",
+  "Abnormal discharge",
+  "Acidity",
+  "Anemia",
+  "Anxiety",
+  "Appetite loss",
+  "Back pain",
+  "Bladder discomfort",
+  "Bleeding from gums",
+  "Blistering/Blistered rash on body",
+  "Bloating",
+  "Blocked nose",
+  "Blood in the stool",
+  "Blood in urine",
+  "Blood/mucus in stool",
+  "Bloody stool",
+  "Blurred and distorted vision",
+  "Body aches",
+  "Bone deformities",
+  "Brittle nails",
+  "Bumps",
+  "Burning",
+  "Burning during urination",
+  "Burning sensation",
+  "Burning sensation during urination",
+  "Burrow tracks",
+  "Chest pain",
+  "Chills",
+  "Chronic swelling",
+  "Cold extremities",
+  "Cold hands and feets",
+  "Congestion",
+  "Conjunctivitis",
+  "Constipation",
+  "Continuous feel of urine",
+  "Continuous sneezing",
+  "Cough",
+  "Cracks in skin",
+  "Cramps",
+  "Crusting soreness",
+  "Dark urine",
+  "Darkened skin",
+  "Dehydration",
+  "Delayed development",
+  "Delayed growth",
+  "Diarrhoea",
+  "Diarrhoea with mucus",
+  "Difficulty in breathing",
+  "Difficulty moving",
+  "Difficulty swallowing",
+  "Digestive discomfort",
+  "Digestive upset",
+  "Discharge",
+  "Discolored patches",
+  "Discomfort",
+  "Discomfort during urination",
+  "Discomfort in lower abdomen",
+  "Disfigured skin",
+  "Dizziness",
+  "Easy bruising of skin",
+  "Enlarged abdomen",
+  "Enlarged lymph nodes",
+  "Enlarged spleen",
+  "Excessive hunger",
+  "Eye pain",
+  "Eye problems",
+  "Eye redness",
+  "Facial bone deformities",
+  "Facial pain",
+  "Facial swelling",
+  "Facial tenderness",
+  "farting",
+  "Fatigue and weakness",
+  "Feeling of fullness",
+  "Fever",
+  "Fluid filled blisters",
+  "Foul odor",
+  "Foul smell of urine",
+  "Foul smelling discharge",
+  "Frequent diarrhoea",
+  "Frequent urge to urinate",
+  "Frequent urination",
+  "Genetics",
+  "Genital irritation",
+  "Genital redness",
+  "Genital soreness",
+  "Genital swelling",
+  "Greenish discharge",
+  "Headache",
+  "Hip pain in joints",
+  "Indigestion",
+  "Inflammation in legs",
+  "Intense Itchy skin",
+  "Intestinal discomfort",
+  "Iron deficiency",
+  "Iron deficiency anemia",
+  "Irregular sugar level",
+  "Irritability",
+  "Irritation in anus",
+  "Itchy skin",
+  "Jaundice (yellowish skin)",
+  "Jaw cramps",
+  "Jaw pain",
+  "Joint aches",
+  "Joint inflammation",
+  "Joint stiffness",
+  "Joint swelling",
+  "Kidney disfunction",
+  "Knee pain",
+  "Koplik's spots in mouth",
+  "Lack of concentration",
+  "Lesions",
+  "Lethargy",
+  "Light or dark patches",
+  "Lockjaw",
+  "Loose stools",
+  "Loss of appetite",
+  "Loss of coordination and balance",
+  "Loss of eyebrows",
+  "Loss of sensation",
+  "Lymphedema",
+  "Malnutrition",
+  "Mild abdominal pain",
+  "Mood swings",
+  "Mouth soreness",
+  "Movement stiffness",
+  "Muscle aches",
+  "Muscle Fatigue and weakness",
+  "Muscle pain",
+  "Muscle spasms",
+  "Muscle stiffness",
+  "Nasal congestion",
+  "Nausea",
+  "Neck pain",
+  "Nerve damage",
+  "Nodules",
+  "Numb fingers/toes",
+  "Numbness",
+  "Open soreness",
+  "Pain during bowel movements",
+  "Pain during intercourse",
+  "Pain during urination",
+  "Pain in anal region",
+  "Pain in cheekbones",
+  "Pain in joints",
+  "Pain in limbs",
+  "Pain radiating to back",
+  "Painful muscle spasms",
+  "Painful urination",
+  "Painful walking",
+  "Painless soreness on genitals",
+  "Painless ulcer",
+  "Pale complexion",
+  "Pale skin",
+  "Passing gases, farting",
+  "Pelvic discomfort",
+  "Pelvic pain",
+  "Pelvic pain or pressure",
+  "Postnasal drip",
+  "Pressure around nose/eyes",
+  "Rapid heartbeat",
+  "Red eyes",
+  "Red rash on body",
+  "Red rash on body in clusters",
+  "Red rash on body on palms",
+  "Red rash on body starting on chest/back",
+  "Red rash on body spreading from head to body",
+  "Red rash on body(limbs)",
+  "Red rash on body(torso)",
+  "Red soreness",
+  "Red spots with white centers",
+  "Redness",
+  "Redness and soreness",
+  "Reduced smell",
+  "Restlessness",
+  "Runny nose",
+  "Sensation loss",
+  "Severe Itchy skin (worse at night)",
+  "Severe muscle spasms",
+  "Severe pain in joints",
+  "Shivering",
+  "Shortness of breath",
+  "Silver like dusting",
+  "Sinus pressure",
+  "Skin cracks",
+  "Skin lesions",
+  "Skin peeling",
+  "Skin soreness",
+  "Skin thickening",
+  "Skin turning yellow",
+  "Skin ulcers",
+  "Small blisters",
+  "Small bumps",
+  "Small dents in nails",
+  "Small red bumps",
+  "Small red spots",
+  "Sore throat",
+  "Soreness",
+  "Spinning movements",
+  "Stiffness in neck/abdomen",
+  "Stomach pain",
+  "Stomach pain and cramps",
+  "Sunken eyes",
+  "Sweating",
+  "Swelling below the ears",
+  "Swelling in groin",
+  "Swelling in jaw",
+  "Swelling in limbs",
+  "Swelling joints",
+  "Swollen cheeks",
+  "Swollen glands",
+  "Swollen legs",
+  "Swollen lymph nodes",
+  "Swollen lymph nodes behind ears",
+  "Swollen salivary glands",
+  "Thick discharge",
+  "Thick skin",
+  "Thick white discharge",
+  "Thickened skin",
+  "Trouble breathing",
+  "Ulcers on tongue",
+  "Vaginal Itchy skin",
+  "Vaginal soreness",
+  "Visible tapeworm segments in stool",
+  "Visible worms in stool",
+  "Vision changes",
+  "Vision loss",
+  "Vomiting",
+  "Watering from eyes",
+  "Weight gain",
+  "Weight loss",
+  "Wheezing",
+  "White coating on tongue",
+  "White patches in mouth",
+  "Yellow eyes",
+  "Yellowgreen discharge",
+  "Yellowish discharge",
+  "Yellowish skin"
+];
+const diseaseSymptomMap =
+{
+    "Jaundice (yellowish skin)": [
+        [
+            "Fatigue and weakness",
+            "Fever",
+            "Itchy skin",
+            "Vomiting"
+        ], [
+            "Fatigue and weakness",
+            "Fever",
+            "Itchy skin",
+            "Weight loss"
+        ], [
+            "Fatigue and weakness",
+            "Fever",
+            "Vomiting",
+            "Weight loss"
+        ], [
+            "Fatigue and weakness",
+            "Itchy skin",
+            "Vomiting",
+            "Weight loss"
+        ], [
+            "Fever",
+            "Itchy skin",
+            "Vomiting",
+            "Weight loss"
+        ] ],
+    "Influenza": [
+        [
+            "Body aches",
+            "Congestion",
+            "Cough",
+            "Fever"
+        ], [
+            "Chills",
+            "Cough",
+            "Fever",
+            "Sore throat"
+        ], [
+            "Cough",
+            "Fever",
+            "Nasal congestion",
+            "Sore throat"
+        ], [
+            "Fatigue and weakness",
+            "Fever",
+            "Headache",
+            "Muscle aches"
+        ], [
+            "Fatigue and weakness",
+            "Headache",
+            "Muscle aches",
+            "Runny nose"
+        ] ],
+    "Leprosy": [
+        [
+            "Discolored patches",
+            "Loss of sensation",
+            "Nerve damage",
+            "Thickened skin"
+        ], [
+            "Disfigured skin",
+            "Muscle Fatigue and weakness",
+            "Sensation loss",
+            "Vision loss"
+        ], [
+            "Eye problems",
+            "Muscle Fatigue and weakness",
+            "Numbness",
+            "Skin lesions"
+        ], [
+            "Fatigue and weakness",
+            "Lesions",
+            "Light or dark patches",
+            "Numb fingers/toes"
+        ], [
+            "Loss of eyebrows",
+            "Numbness",
+            "Open soreness",
+            "Skin thickening"
+        ] ],
+    "Measles": [
+        [
+            "Conjunctivitis",
+            "Cough",
+            "Fever",
+            "Red rash on body"
+        ], [
+            "Cough",
+            "Fever",
+            "Red rash on body spreading from head to body",
+            "Runny nose"
+        ], [
+            "Cough",
+            "Fever",
+            "Red spots with white centers",
+            "Runny nose"
+        ], [
+            "Fever",
+            "Koplik's spots in mouth",
+            "Red rash on body",
+            "Sore throat"
+        ] ],
+    "Migraine": [
+        [
+            "Acidity",
+            "Blurred and distorted vision",
+            "Excessive hunger",
+            "Headache"
+        ], [
+            "Acidity",
+            "Blurred and distorted vision",
+            "Excessive hunger",
+            "Indigestion"
+        ], [
+            "Acidity",
+            "Blurred and distorted vision",
+            "Headache",
+            "Indigestion"
+        ], [
+            "Acidity",
+            "Excessive hunger",
+            "Headache",
+            "Indigestion"
+        ], [
+            "Blurred and distorted vision",
+            "Excessive hunger",
+            "Headache",
+            "Indigestion"
+        ] ],
+    "Malaria": [
+        [
+            "Chills",
+            "Fever",
+            "Headache",
+            "Sweating"
+        ], [
+            "Chills",
+            "Fever",
+            "Headache",
+            "Vomiting"
+        ], [
+            "Chills",
+            "Fever",
+            "Sweating",
+            "Vomiting"
+        ], [
+            "Chills",
+            "Headache",
+            "Sweating",
+            "Vomiting"
+        ], [
+            "Fever",
+            "Headache",
+            "Sweating",
+            "Vomiting"
+        ] ],
+    "Hepatitis a": [
+        [
+            "Dark urine",
+            "Nausea",
+            "Pain in joints",
+            "Vomiting"
+        ], [
+            "Dark urine",
+            "Nausea",
+            "Pain in joints",
+            "Yellowish skin"
+        ], [
+            "Dark urine",
+            "Nausea",
+            "Vomiting",
+            "Yellowish skin"
+        ], [
+            "Dark urine",
+            "Pain in joints",
+            "Vomiting",
+            "Yellowish skin"
+        ], [
+            "Nausea",
+            "Pain in joints",
+            "Vomiting",
+            "Yellowish skin"
+        ] ],
+    "Hookworm infection": [
+        [
+            "Abdominal pain",
+            "Cough",
+            "Fatigue and weakness",
+            "Iron deficiency anemia"
+        ], [
+            "Abdominal pain",
+            "Cough",
+            "Iron deficiency",
+            "Itchy skin"
+        ], [
+            "Abdominal pain",
+            "Diarrhoea",
+            "Fatigue and weakness",
+            "Red rash on body"
+        ], [
+            "Blood in the stool",
+            "Intestinal discomfort",
+            "Red rash on body",
+            "Weight loss"
+        ], [
+            "Cramps",
+            "Fatigue and weakness",
+            "Nausea",
+            "Red rash on body"
+        ] ],
+    "Hepatitis e": [
+        [
+            "Fatigue and weakness",
+            "Fever",
+            "Pain in joints",
+            "Vomiting"
+        ], [
+            "Fatigue and weakness",
+            "Fever",
+            "Pain in joints",
+            "Yellowish skin"
+        ], [
+            "Fatigue and weakness",
+            "Fever",
+            "Vomiting",
+            "Yellowish skin"
+        ], [
+            "Fatigue and weakness",
+            "Pain in joints",
+            "Vomiting",
+            "Yellowish skin"
+        ], [
+            "Fever",
+            "Pain in joints",
+            "Vomiting",
+            "Yellowish skin"
+        ] ],
+    "Zika virus": [
+        [
+            "Body aches",
+            "Eye redness",
+            "Fever",
+            "Red rash on body"
+        ], [
+            "Conjunctivitis",
+            "Fatigue and weakness",
+            "Pain in joints",
+            "Red rash on body(torso)"
+        ], [
+            "Fever",
+            "Headache",
+            "Muscle pain",
+            "Red eyes"
+        ], [
+            "Fever",
+            "Headache",
+            "Muscle pain",
+            "Red rash on body"
+        ], [
+            "Fever",
+            "Pain in joints",
+            "Red eyes",
+            "Red rash on body"
+        ] ],
+    "Hypertension": [
+        [
+            "Chest pain",
+            "Dizziness",
+            "Headache",
+            "Lack of concentration"
+        ], [
+            "Chest pain",
+            "Dizziness",
+            "Headache",
+            "Loss of coordination and balance"
+        ], [
+            "Chest pain",
+            "Dizziness",
+            "Lack of concentration",
+            "Loss of coordination and balance"
+        ], [
+            "Chest pain",
+            "Headache",
+            "Lack of concentration",
+            "Loss of coordination and balance"
+        ], [
+            "Dizziness",
+            "Headache",
+            "Lack of concentration",
+            "Loss of coordination and balance"
+        ] ],
+    "Hypothyroidism": [
+        [
+            "Cold hands and feets",
+            "Fatigue and weakness",
+            "Lethargy",
+            "Mood swings"
+        ], [
+            "Cold hands and feets",
+            "Fatigue and weakness",
+            "Lethargy",
+            "Weight gain"
+        ], [
+            "Cold hands and feets",
+            "Fatigue and weakness",
+            "Mood swings",
+            "Weight gain"
+        ], [
+            "Cold hands and feets",
+            "Lethargy",
+            "Mood swings",
+            "Weight gain"
+        ], [
+            "Fatigue and weakness",
+            "Lethargy",
+            "Mood swings",
+            "Weight gain"
+        ] ],
+    "Hypoglycemia": [
+        [
+            "Anxiety",
+            "Fatigue and weakness",
+            "Headache",
+            "Sweating"
+        ], [
+            "Anxiety",
+            "Fatigue and weakness",
+            "Headache",
+            "Vomiting"
+        ], [
+            "Anxiety",
+            "Fatigue and weakness",
+            "Sweating",
+            "Vomiting"
+        ], [
+            "Anxiety",
+            "Headache",
+            "Sweating",
+            "Vomiting"
+        ], [
+            "Fatigue and weakness",
+            "Headache",
+            "Sweating",
+            "Vomiting"
+        ] ],
+    "Hyperthyroidism": [
+        [
+            "Fatigue and weakness",
+            "Mood swings",
+            "Restlessness",
+            "Sweating"
+        ], [
+            "Fatigue and weakness",
+            "Mood swings",
+            "Restlessness",
+            "Weight loss"
+        ], [
+            "Fatigue and weakness",
+            "Mood swings",
+            "Sweating",
+            "Weight loss"
+        ], [
+            "Fatigue and weakness",
+            "Restlessness",
+            "Sweating",
+            "Weight loss"
+        ], [
+            "Mood swings",
+            "Restlessness",
+            "Sweating",
+            "Weight loss"
+        ] ],
+    "(vertigo) paroymsal  positional vertigo": [
+        [
+            "Headache",
+            "Loss of coordination and balance",
+            "Nausea",
+            "Spinning movements"
+        ], [
+            "Headache",
+            "Loss of coordination and balance",
+            "Nausea",
+            "Vomiting"
+        ], [
+            "Headache",
+            "Loss of coordination and balance",
+            "Spinning movements",
+            "Vomiting"
+        ], [
+            "Headache",
+            "Nausea",
+            "Spinning movements",
+            "Vomiting"
+        ], [
+            "Loss of coordination and balance",
+            "Nausea",
+            "Spinning movements",
+            "Vomiting"
+        ] ],
+    "Mumps": [
+        [
+            "Body aches",
+            "Fever",
+            "Headache",
+            "Swelling below the ears"
+        ], [
+            "Fatigue and weakness",
+            "Fever",
+            "Headache",
+            "Swollen cheeks"
+        ], [
+            "Fever",
+            "Headache",
+            "Loss of appetite",
+            "Swelling in jaw"
+        ], [
+            "Fever",
+            "Headache",
+            "Muscle aches",
+            "Swollen salivary glands"
+        ], [
+            "Fever",
+            "Jaw pain",
+            "Muscle aches",
+            "Swollen glands"
+        ] ],
+    "Toxoplasmosis": [
+        [
+            "Blurred and distorted vision",
+            "Fatigue and weakness",
+            "Fever",
+            "Headache"
+        ], [
+            "Body aches",
+            "Fever",
+            "Sore throat",
+            "Swollen glands"
+        ], [
+            "Enlarged lymph nodes",
+            "Fever",
+            "Muscle aches",
+            "Sore throat"
+        ], [
+            "Eye pain",
+            "Fatigue and weakness",
+            "Headache",
+            "Vision changes"
+        ], [
+            "Fatigue and weakness",
+            "Headache",
+            "Muscle pain",
+            "Swollen lymph nodes"
+        ] ],
+    "Trichomoniasis": [
+        [
+            "Abdominal discomfort",
+            "Itchy skin",
+            "Pain during intercourse",
+            "Yellowgreen discharge"
+        ], [
+            "Burning",
+            "Foul smelling discharge",
+            "Itchy skin",
+            "Vaginal soreness"
+        ], [
+            "Discharge",
+            "Discomfort in lower abdomen",
+            "Frequent urination",
+            "Genital irritation"
+        ], [
+            "Discharge",
+            "Genital redness",
+            "Itchy skin",
+            "Painful urination"
+        ], [
+            "Foul odor",
+            "Greenish discharge",
+            "Pain during urination",
+            "Vaginal Itchy skin"
+        ] ],
+    "Thalassemia": [
+        [
+            "Anemia",
+            "Facial bone deformities",
+            "Fatigue and weakness",
+            "Yellowish skin"
+        ], [
+            "Bone deformities",
+            "Enlarged spleen",
+            "Fatigue and weakness",
+            "Fatigue and weakness"
+        ], [
+            "Dark urine",
+            "Delayed growth",
+            "Fatigue and weakness",
+            "Pale skin"
+        ], [
+            "Dark urine",
+            "Enlarged abdomen",
+            "Fatigue and weakness",
+            "Loss of appetite"
+        ], [
+            "Darkened skin",
+            "Delayed development",
+            "Fatigue and weakness",
+            "Pale complexion"
+        ] ],
+    "Tuberculosis": [
+        [
+            "Chills",
+            "Cough",
+            "Fatigue and weakness",
+            "Vomiting"
+        ], [
+            "Chills",
+            "Cough",
+            "Fatigue and weakness",
+            "Weight loss"
+        ], [
+            "Chills",
+            "Cough",
+            "Vomiting",
+            "Weight loss"
+        ], [
+            "Chills",
+            "Fatigue and weakness",
+            "Vomiting",
+            "Weight loss"
+        ], [
+            "Cough",
+            "Fatigue and weakness",
+            "Vomiting",
+            "Weight loss"
+        ] ],
+    "Tetanus": [
+        [
+            "Abdominal rigidity",
+            "Difficulty moving",
+            "Jaw pain",
+            "Sweating"
+        ], [
+            "Difficulty swallowing",
+            "Fever",
+            "Muscle pain",
+            "Stiffness in neck/abdomen"
+        ], [
+            "Difficulty swallowing",
+            "Lockjaw",
+            "Muscle spasms",
+            "Muscle stiffness"
+        ], [
+            "Fever",
+            "Jaw cramps",
+            "Painful muscle spasms",
+            "Stiffness in neck/abdomen"
+        ], [
+            "Fever",
+            "Lockjaw",
+            "Severe muscle spasms",
+            "Trouble breathing"
+        ] ],
+    "Tapeworm infection": [
+        [
+            "Abdominal cramps",
+            "Bloating",
+            "Feeling of fullness",
+            "Weight loss"
+        ], [
+            "Abdominal pain",
+            "Appetite loss",
+            "Nausea",
+            "Weight loss"
+        ], [
+            "Cramps",
+            "Digestive discomfort",
+            "Fatigue and weakness",
+            "Visible tapeworm segments in stool"
+        ], [
+            "Diarrhoea",
+            "Dizziness",
+            "Mild abdominal pain",
+            "Nausea"
+        ], [
+            "Fatigue and weakness",
+            "Fatigue and weakness",
+            "Loss of appetite",
+            "Nausea"
+        ] ],
+    "Yellow Fever": [
+        [
+            "Abdominal pain",
+            "Dehydration",
+            "Jaundice (yellowish skin)",
+            "Muscle pain"
+        ], [
+            "Bleeding from gums",
+            "Fever",
+            "Jaundice (yellowish skin)",
+            "Kidney disfunction"
+        ], [
+            "Chills",
+            "Fatigue and weakness",
+            "Nausea",
+            "Skin turning yellow"
+        ], [
+            "Chills",
+            "Fever",
+            "Jaundice (yellowish skin)",
+            "Muscle pain"
+        ], [
+            "Headache",
+            "Stomach pain",
+            "Vomiting",
+            "Yellow eyes"
+        ] ],
+    "Urinary tract infection": [
+        [
+            "Bladder discomfort",
+            "Blood in urine",
+            "Continuous feel of urine",
+            "Painful urination"
+        ], [
+            "Bladder discomfort",
+            "Continuous feel of urine",
+            "Foul smell of urine",
+            "Frequent urge to urinate"
+        ], [
+            "Bladder discomfort",
+            "Continuous feel of urine",
+            "Foul smell of urine",
+            "Painful urination"
+        ], [
+            "Bladder discomfort",
+            "Foul smell of urine",
+            "Painful urination",
+            "Pelvic pain or pressure"
+        ], [
+            "Burning sensation during urination",
+            "Continuous feel of urine",
+            "Foul smell of urine",
+            "Painful urination"
+        ] ],
+    "Typhoid": [
+        [
+            "Chills",
+            "Fatigue and weakness",
+            "Fever",
+            "Headache"
+        ], [
+            "Chills",
+            "Fatigue and weakness",
+            "Fever",
+            "Vomiting"
+        ] ],
+    "Pneumonia": [
+        [
+            "Chills",
+            "Cough",
+            "Difficulty in breathing",
+            "Fatigue and weakness"
+        ], [
+            "Chills",
+            "Cough",
+            "Difficulty in breathing",
+            "Fever"
+        ], [
+            "Chills",
+            "Cough",
+            "Fatigue and weakness",
+            "Fever"
+        ], [
+            "Chills",
+            "Difficulty in breathing",
+            "Fatigue and weakness",
+            "Fever"
+        ], [
+            "Cough",
+            "Difficulty in breathing",
+            "Fatigue and weakness",
+            "Fever"
+        ] ],
+    "Peptic ulcer diseae": [
+        [
+            "Abdominal pain",
+            "Indigestion",
+            "Loss of appetite",
+            "Passing gases, farting"
+        ], [
+            "Abdominal pain",
+            "Indigestion",
+            "Loss of appetite",
+            "Vomiting"
+        ], [
+            "Abdominal pain",
+            "Indigestion",
+            "Passing gases, farting",
+            "Vomiting"
+        ], [
+            "Abdominal pain",
+            "Loss of appetite",
+            "Passing gases, farting",
+            "Vomiting"
+        ], [
+            "Indigestion",
+            "Loss of appetite",
+            "Passing gases, farting",
+            "Vomiting"
+        ] ],
+    "Psoriasis": [
+        [
+            "Pain in joints",
+            "Red rash on body",
+            "Silver like dusting",
+            "Skin peeling"
+        ], [
+            "Pain in joints",
+            "Red rash on body",
+            "Silver like dusting",
+            "Small dents in nails"
+        ], [
+            "Pain in joints",
+            "Red rash on body",
+            "Skin peeling",
+            "Small dents in nails"
+        ], [
+            "Pain in joints",
+            "Silver like dusting",
+            "Skin peeling",
+            "Small dents in nails"
+        ], [
+            "Red rash on body",
+            "Silver like dusting",
+            "Skin peeling",
+            "Small dents in nails"
+        ] ],
+    "Osteoarthristis": [
+        [
+            "Hip pain in joints",
+            "Knee pain",
+            "Neck pain",
+            "Pain in joints"
+        ], [
+            "Hip pain in joints",
+            "Knee pain",
+            "Neck pain",
+            "Swelling joints"
+        ], [
+            "Hip pain in joints",
+            "Knee pain",
+            "Pain in joints",
+            "Swelling joints"
+        ], [
+            "Hip pain in joints",
+            "Neck pain",
+            "Pain in joints",
+            "Swelling joints"
+        ], [
+            "Knee pain",
+            "Neck pain",
+            "Pain in joints",
+            "Swelling joints"
+        ] ],
+    "Sinusitis": [
+        [
+            "Blocked nose",
+            "Cough",
+            "Pain in cheekbones",
+            "Postnasal drip"
+        ], [
+            "Facial pain",
+            "Headache",
+            "Nasal congestion",
+            "Reduced smell"
+        ], [
+            "Facial swelling",
+            "Runny nose",
+            "Sinus pressure",
+            "Sore throat"
+        ], [
+            "Facial tenderness",
+            "Fatigue and weakness",
+            "Headache",
+            "Nasal congestion"
+        ], [
+            "Fever",
+            "Headache",
+            "Pressure around nose/eyes",
+            "Thick discharge"
+        ] ],
+    "Syphilis": [
+        [
+            "Easy bruising of skin",
+            "Painless soreness on genitals",
+            "Red rash on body  on palms",
+            "Swollen lymph nodes"
+        ], [
+            "Fatigue and weakness",
+            "Genital soreness",
+            "Red rash on body",
+            "Swollen glands"
+        ], [
+            "Fatigue and weakness",
+            "Painless ulcer",
+            "Red rash on body",
+            "Swollen glands"
+        ], [
+            "Fever",
+            "Headache",
+            "Skin soreness",
+            "Swollen lymph nodes"
+        ], [
+            "Fever",
+            "Muscle aches",
+            "Red rash on body",
+            "Sore throat"
+        ] ],
+    "Rubella": [
+        [
+            "Fever",
+            "Headache",
+            "Joint aches",
+            "Red rash on body"
+        ], [
+            "Fever",
+            "Pain in joints",
+            "Red rash on body",
+            "Swollen lymph nodes"
+        ], [
+            "Fever",
+            "Red eyes",
+            "Red rash on body",
+            "Swollen lymph nodes"
+        ], [
+            "Fever",
+            "Red eyes",
+            "Red rash on body",
+            "Swollen lymph nodes behind ears"
+        ], [
+            "Fever",
+            "Red rash on body",
+            "Sore throat",
+            "Swollen lymph nodes"
+        ] ],
+    "Scabies": [
+        [
+            "Bumps",
+            "Red rash on body",
+            "Red soreness",
+            "Severe Itchy skin (worse at night)"
+        ], [
+            "Burrow tracks",
+            "Intense Itchy skin",
+            "Red rash on body",
+            "Small bumps"
+        ], [
+            "Burrow tracks",
+            "Itchy skin",
+            "Redness",
+            "Small blisters"
+        ], [
+            "Crusting soreness",
+            "Intense Itchy skin",
+            "Skin thickening",
+            "Small red bumps"
+        ], [
+            "Itchy skin",
+            "Red rash on body",
+            "Skin cracks",
+            "Soreness"
+        ] ],
+    "Gonorrhea": [
+        [
+            "Abdominal pain",
+            "Burning sensation",
+            "Discomfort during urination",
+            "Swelling in groin"
+        ], [
+            "Abnormal discharge",
+            "Fever",
+            "Genital soreness",
+            "Pelvic pain"
+        ], [
+            "Discharge",
+            "Fever",
+            "Painful urination",
+            "Pelvic pain"
+        ], [
+            "Frequent urination",
+            "Itchy skin",
+            "Pain during intercourse",
+            "Yellowgreen discharge"
+        ], [
+            "Genital swelling",
+            "Painful urination",
+            "Pelvic discomfort",
+            "Yellowish discharge"
+        ] ],
+    "Ascariasis": [
+        [
+            "Abdominal discomfort",
+            "Cough",
+            "Fever",
+            "Nausea"
+        ], [
+            "Abdominal pain",
+            "Cough",
+            "Fatigue and weakness",
+            "Nausea"
+        ], [
+            "Abdominal pain",
+            "Fever",
+            "Nausea",
+            "Wheezing"
+        ], [
+            "Bloating",
+            "Loss of appetite",
+            "Visible worms in stool",
+            "Weight loss"
+        ], [
+            "Cramps",
+            "Digestive upset",
+            "Fatigue and weakness",
+            "Malnutrition"
+        ] ],
+    "Dengue": [
+        [
+            "Chills",
+            "Fatigue and weakness",
+            "Pain in joints",
+            "Red rash on body"
+        ], [
+            "Chills",
+            "Fatigue and weakness",
+            "Pain in joints",
+            "Vomiting"
+        ], [
+            "Chills",
+            "Fatigue and weakness",
+            "Red rash on body",
+            "Vomiting"
+        ], [
+            "Chills",
+            "Pain in joints",
+            "Red rash on body",
+            "Vomiting"
+        ], [
+            "Fatigue and weakness",
+            "Pain in joints",
+            "Red rash on body",
+            "Vomiting"
+        ] ],
+    "Diabetes": [
+        [
+            "Fatigue and weakness",
+            "Irregular sugar level",
+            "Lethargy",
+            "Restlessness"
+        ], [
+            "Fatigue and weakness",
+            "Irregular sugar level",
+            "Lethargy",
+            "Weight loss"
+        ], [
+            "Fatigue and weakness",
+            "Irregular sugar level",
+            "Restlessness",
+            "Weight loss"
+        ], [
+            "Fatigue and weakness",
+            "Lethargy",
+            "Restlessness",
+            "Weight loss"
+        ], [
+            "Irregular sugar level",
+            "Lethargy",
+            "Restlessness",
+            "Weight loss"
+        ] ],
+    "Chronic cholestasis": [
+        [
+            "Itchy skin",
+            "Loss of appetite",
+            "Nausea",
+            "Vomiting"
+        ], [
+            "Itchy skin",
+            "Loss of appetite",
+            "Nausea",
+            "Yellowish skin"
+        ], [
+            "Itchy skin",
+            "Loss of appetite",
+            "Vomiting",
+            "Yellowish skin"
+        ], [
+            "Itchy skin",
+            "Nausea",
+            "Vomiting",
+            "Yellowish skin"
+        ], [
+            "Loss of appetite",
+            "Nausea",
+            "Vomiting",
+            "Yellowish skin"
+        ] ],
+    "Drug reaction": [
+        [
+            "Blood in urine",
+            "Itchy skin",
+            "Painful urination",
+            "Red rash on body"
+        ], [
+            "Blood in urine",
+            "Itchy skin",
+            "Painful urination",
+            "Stomach pain"
+        ], [
+            "Blood in urine",
+            "Itchy skin",
+            "Red rash on body",
+            "Stomach pain"
+        ], [
+            "Blood in urine",
+            "Painful urination",
+            "Red rash on body",
+            "Stomach pain"
+        ], [
+            "Itchy skin",
+            "Painful urination",
+            "Red rash on body",
+            "Stomach pain"
+        ] ],
+    "Dimorphic hemmorhoids(piles)": [
+        [
+            "Bloody stool",
+            "Constipation",
+            "Irritation in anus",
+            "Pain during bowel movements"
+        ], [
+            "Bloody stool",
+            "Constipation",
+            "Irritation in anus",
+            "Pain in anal region"
+        ], [
+            "Bloody stool",
+            "Constipation",
+            "Pain during bowel movements",
+            "Pain in anal region"
+        ], [
+            "Bloody stool",
+            "Irritation in anus",
+            "Pain during bowel movements",
+            "Pain in anal region"
+        ], [
+            "Constipation",
+            "Irritation in anus",
+            "Pain during bowel movements",
+            "Pain in anal region"
+        ] ],
+    "Arthritis": [
+        [
+            "Movement stiffness",
+            "Muscle Fatigue and weakness",
+            "Painful walking",
+            "Stiffness in neck/abdomen"
+        ], [
+            "Movement stiffness",
+            "Muscle Fatigue and weakness",
+            "Painful walking",
+            "Swelling joints"
+        ], [
+            "Movement stiffness",
+            "Muscle Fatigue and weakness",
+            "Stiffness in neck/abdomen",
+            "Swelling joints"
+        ], [
+            "Movement stiffness",
+            "Painful walking",
+            "Stiffness in neck/abdomen",
+            "Swelling joints"
+        ], [
+            "Muscle Fatigue and weakness",
+            "Painful walking",
+            "Stiffness in neck/abdomen",
+            "Swelling joints"
+        ] ],
+    "Chickenpox": [
+        [
+            "Blistering/Blistered rash on body",
+            "Fatigue and weakness",
+            "Fever",
+            "Itchy skin"
+        ], [
+            "Blistering/Blistered rash on body",
+            "Headache",
+            "Itchy skin",
+            "Red rash on body  starting on chest/back"
+        ], [
+            "Body aches",
+            "Fever",
+            "Itchy skin",
+            "Red rash on body  in clusters"
+        ], [
+            "Fatigue and weakness",
+            "Fever",
+            "Fluid filled blisters",
+            "Red rash on body"
+        ], [
+            "Fatigue and weakness",
+            "Fever",
+            "Itchy skin",
+            "Lethargy"
+        ], [
+            "Fatigue and weakness",
+            "Fever",
+            "Itchy skin",
+            "Red rash on body"
+        ], [
+            "Fatigue and weakness",
+            "Fever",
+            "Lethargy",
+            "Red rash on body"
+        ], [
+            "Fatigue and weakness",
+            "Fever",
+            "Red rash on body",
+            "Small red spots"
+        ], [
+            "Fatigue and weakness",
+            "Itchy skin",
+            "Lethargy",
+            "Red rash on body"
+        ], [
+            "Fever",
+            "Itchy skin",
+            "Lethargy",
+            "Red rash on body"
+        ] ],
+    "Candidiasis": [
+        [
+            "Burning during urination",
+            "Red rash on body",
+            "Thick white discharge",
+            "Vaginal Itchy skin"
+        ], [
+            "Burning sensation",
+            "Itchy skin",
+            "Mouth soreness",
+            "Thick discharge"
+        ], [
+            "Burning sensation",
+            "Itchy skin",
+            "Redness",
+            "White patches in mouth"
+        ], [
+            "Cracks in skin",
+            "Red rash on body",
+            "Soreness",
+            "White patches in mouth"
+        ], [
+            "Difficulty swallowing",
+            "Discomfort",
+            "Redness and soreness",
+            "White coating on tongue"
+        ] ],
+    "Cervical spondylosis": [
+        [
+            "Back pain",
+            "Dizziness",
+            "Fatigue and weakness",
+            "Loss of coordination and balance"
+        ], [
+            "Back pain",
+            "Dizziness",
+            "Fatigue and weakness",
+            "Neck pain"
+        ], [
+            "Back pain",
+            "Dizziness",
+            "Loss of coordination and balance",
+            "Neck pain"
+        ], [
+            "Back pain",
+            "Fatigue and weakness",
+            "Loss of coordination and balance",
+            "Neck pain"
+        ], [
+            "Dizziness",
+            "Fatigue and weakness",
+            "Loss of coordination and balance",
+            "Neck pain"
+        ] ],
+    "Bronchial asthma": [
+        [
+            "Chills",
+            "Continuous sneezing",
+            "Shivering",
+            "Watering from eyes"
+        ], [
+            "Cough",
+            "Difficulty in breathing",
+            "Fatigue and weakness",
+            "Fever"
+        ], [
+            "Cough",
+            "Difficulty in breathing",
+            "Fatigue and weakness",
+            "Genetics"
+        ], [
+            "Cough",
+            "Difficulty in breathing",
+            "Fever",
+            "Genetics"
+        ], [
+            "Cough",
+            "Fatigue and weakness",
+            "Fever",
+            "Genetics"
+        ], [
+            "Difficulty in breathing",
+            "Fatigue and weakness",
+            "Fever",
+            "Genetics"
+        ] ],
+    "Chikungunya": [
+        [
+            "Body aches",
+            "Fever",
+            "Joint inflammation",
+            "Red rash on body(limbs)"
+        ], [
+            "Fatigue and weakness",
+            "Fever",
+            "Headache",
+            "Joint stiffness"
+        ], [
+            "Fever",
+            "Joint swelling",
+            "Nausea",
+            "Red rash on body"
+        ], [
+            "Fever",
+            "Muscle pain",
+            "Red rash on body",
+            "Severe pain in joints"
+        ], [
+            "Fever",
+            "Pain in joints",
+            "Red eyes",
+            "Red rash on body"
+        ] ],
+    "Gastroenteritis": [
+        [
+            "Dehydration",
+            "Diarrhoea",
+            "Fever",
+            "Vomiting"
+        ], [
+            "Dehydration",
+            "Diarrhoea",
+            "Stomach pain and cramps",
+            "Sunken eyes"
+        ], [
+            "Dehydration",
+            "Diarrhoea",
+            "Sunken eyes",
+            "Vomiting"
+        ], [
+            "Diarrhoea",
+            "Fatigue and weakness",
+            "Sunken eyes",
+            "Vomiting"
+        ] ],
+    "Anemia": [
+        [
+            "Brittle nails",
+            "Cold hands and feets",
+            "Fatigue and weakness",
+            "Headache"
+        ], [
+            "Chest pain",
+            "Fatigue and weakness",
+            "Fatigue and weakness",
+            "Shortness of breath"
+        ], [
+            "Cold extremities",
+            "Headache",
+            "Irritability",
+            "Pale skin"
+        ], [
+            "Dizziness",
+            "Fatigue and weakness",
+            "Pale complexion",
+            "Rapid heartbeat"
+        ], [
+            "Dizziness",
+            "Fatigue and weakness",
+            "Pale skin",
+            "Shortness of breath"
+        ] ],
+    "Gerd": [
+        [
+            "Acidity",
+            "Cough",
+            "Stomach pain",
+            "Ulcers on tongue"
+        ], [
+            "Acidity",
+            "Cough",
+            "Stomach pain",
+            "Vomiting"
+        ], [
+            "Acidity",
+            "Cough",
+            "Ulcers on tongue",
+            "Vomiting"
+        ], [
+            "Acidity",
+            "Stomach pain",
+            "Ulcers on tongue",
+            "Vomiting"
+        ], [
+            "Cough",
+            "Stomach pain",
+            "Ulcers on tongue",
+            "Vomiting"
+        ] ],
+    "Amebiasis": [
+        [
+            "Abdominal cramps",
+            "Blood/mucus in stool",
+            "Fever",
+            "Loose stools"
+        ], [
+            "Abdominal pain",
+            "Blood in the stool",
+            "Fever",
+            "Frequent diarrhoea"
+        ], [
+            "Abdominal pain",
+            "Diarrhoea with mucus",
+            "Weight loss",
+            "farting"
+        ], [
+            "Diarrhoea",
+            "Fatigue and weakness",
+            "Fever",
+            "Nausea"
+        ], [
+            "Diarrhoea",
+            "Nausea",
+            "Stomach pain and cramps",
+            "Weight loss"
+        ] ],
+    "Filariasis": [
+        [
+            "Abdominal bloating",
+            "Fatigue and weakness",
+            "Jaundice (yellowish skin)",
+            "Pain radiating to back"
+        ], [
+            "Chronic swelling",
+            "Muscle pain",
+            "Nodules",
+            "Skin ulcers"
+        ], [
+            "Enlarged lymph nodes",
+            "Fever",
+            "Swelling in limbs",
+            "Thickened skin"
+        ], [
+            "Fatigue and weakness",
+            "Fever",
+            "Inflammation in legs",
+            "Swollen lymph nodes"
+        ], [
+            "Fever",
+            "Lymphedema",
+            "Pain in limbs",
+            "Red rash on body"
+        ], [
+            "Fever",
+            "Pain in joints",
+            "Swollen legs",
+            "Thick skin"
+        ] ]
+};
+
+const symptomLimit = 4;
+
+// Add styles for related symptoms highlighting
+const styleElement = document.createElement('style');
+styleElement.textContent = `
+    @keyframes relatedPulse {
+        0% { background-color: #e3f2fd; }
+        50% { background-color: #bbdefb; }
+        100% { background-color: #e3f2fd; }
+    }
+
+    .symptom-option-related {
+        background: linear-gradient(45deg, #e3f2fd, #bbdefb);
+        font-weight: bold;
+        color: #1565c0;
+        padding: 8px;
+        border-left: 4px solid #1565c0;
+        margin: 2px 0;
+        animation: relatedPulse 2s infinite;
+    }
+
+    datalist option {
+        padding: 4px;
+        margin: 2px 0;
+    }
+`;
+document.head.appendChild(styleElement);
+
+function updateSymptomFields() {
+    // First, verify the container exists
+    const symptomFields = document.getElementById('symptom-fields');
+    if (!symptomFields) {
+        console.error('Symptom fields container not found');
+        return;
+    }
+
+    // Clear existing fields
+    symptomFields.innerHTML = '';
+
+    // Create the symptom input fields
+    for (let i = 0; i < symptomLimit; i++) {
+        const datalistId = `symptom-datalist-${i}`;
+        const fieldDiv = document.createElement('div');
+        fieldDiv.className = 'mb-3';
+        fieldDiv.innerHTML = `
+            <label for="symptom${i + 1}" class="form-label">Symptom ${i + 1}</label>
+            <input type="text"
+                   class="form-control symptom-input"
+                   id="symptom${i + 1}"
+                   name="symptoms[]"
+                   list="${datalistId}"
+                   placeholder="Search and select a symptom"
+                   required>
+            <datalist id="${datalistId}">
+                ${symptomOptions.map(symptom => `<option value="${symptom}">${symptom}</option>`).join('')}
+            </datalist>
+            <small class="text-danger invalid-symptom-message" style="display: none">Please select a valid symptom</small>
+        `;
+        symptomFields.appendChild(fieldDiv);
+    }
+
+    const symptomInputs = document.querySelectorAll('.symptom-input');
+
+    // Function to get related symptoms for a given symptom
+    function getRelatedSymptoms(symptom) {
+        if (!symptom) return [];
+
+        const relatedSymptoms = new Set();
+        Object.entries(diseaseSymptomMap).forEach(([disease, symptomSets]) => {
+            symptomSets.forEach(symptomSet => {
+                if (symptomSet.some(s => s.toLowerCase() === symptom.toLowerCase())) {
+                    symptomSet.forEach(s => relatedSymptoms.add(s));
+                }
+            });
+        });
+        return Array.from(relatedSymptoms);
+    }
+
+    // Function to get currently selected symptoms
+    function getSelectedSymptoms() {
+        return Array.from(symptomInputs)
+            .map(input => input.value.trim())
+            .filter(Boolean)
+            .map(s => s.toLowerCase());
+    }
+
+    // Function to get combined related symptoms from multiple inputs
+    function getCombinedRelatedSymptoms(upToIndex) {
+        const combinedRelated = new Set();
+        for (let i = 0; i < upToIndex; i++) {
+            const symptom = symptomInputs[i].value.trim();
+            if (symptom) {
+                getRelatedSymptoms(symptom).forEach(s => combinedRelated.add(s));
+            }
+        }
+        return Array.from(combinedRelated);
+    }
+
+    // Function to update dropdown options
+    function updateDropdownOptions(input, relatedSymptomsList) {
+        const datalist = input.nextElementSibling;
+        const selectedSymptoms = getSelectedSymptoms();
+
+        // Filter out already selected symptoms
+        relatedSymptomsList = relatedSymptomsList.filter(s =>
+            !selectedSymptoms.includes(s.toLowerCase())
+        );
+
+        const otherSymptoms = symptomOptions.filter(s =>
+            !relatedSymptomsList.includes(s) &&
+            !selectedSymptoms.includes(s.toLowerCase())
+        );
+
+        // Update datalist content
+        datalist.innerHTML = [
+            ...relatedSymptomsList.map(symptom => `
+                <option value="${symptom}" class="symptom-option-related">★ ${symptom} (Related)</option>
+            `),
+            ...otherSymptoms.map(symptom => `
+                <option value="${symptom}">${symptom}</option>
+            `)
+        ].join('');
+    }
+
+    // Add event listeners to each input
+    symptomInputs.forEach((input, index) => {
+        // Focus event
+        input.addEventListener('focus', function() {
+            const selectedSymptoms = getSelectedSymptoms();
+
+            if (index === 0) {
+                // First field shows all symptoms except selected ones
+                const datalist = this.nextElementSibling;
+                datalist.innerHTML = symptomOptions
+                    .filter(s => !selectedSymptoms.includes(s.toLowerCase()))
+                    .map(symptom => `<option value="${symptom}">${symptom}</option>`)
+                    .join('');
+            } else {
+                // Other fields show combined related symptoms from all previous inputs
+                const combinedRelated = getCombinedRelatedSymptoms(index);
+                updateDropdownOptions(this, combinedRelated);
+            }
+        });
+
+        // Input event for validation
+        input.addEventListener('input', function() {
+            const currentValue = this.value.trim();
+            const symptomMessage = this.nextElementSibling.nextElementSibling;
+            const selectedSymptoms = getSelectedSymptoms();
+
+            const isValid = symptomOptions.map(s => s.toLowerCase()).includes(currentValue.toLowerCase());
+            const isDuplicate = selectedSymptoms.filter(s => s === currentValue.toLowerCase()).length > 1;
+
+            if (currentValue !== '' && (!isValid || isDuplicate)) {
+                this.classList.add('is-invalid');
+                symptomMessage.style.display = 'block';
+                symptomMessage.textContent = isDuplicate ?
+                    'This symptom has already been selected' :
+                    'Please select a valid symptom';
+            } else {
+                this.classList.remove('is-invalid');
+                symptomMessage.style.display = 'none';
+            }
+
+            // Update subsequent fields
+            if (isValid && !isDuplicate) {
+                // Update all subsequent fields with combined related symptoms
+                for (let i = index + 1; i < symptomLimit; i++) {
+                    if (symptomInputs[i]) {
+                        const combinedRelated = getCombinedRelatedSymptoms(i);
+                        updateDropdownOptions(symptomInputs[i], combinedRelated);
+                    }
+                }
+            }
+        });
+    });
+}
+
+// Initialize when the DOM is loaded
+document.addEventListener('DOMContentLoaded', updateSymptomFields);
+
+    // Typing effect and form submission code remains the same as in previous script
+    // Add animation styles for typing effect
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes typing {
+            from { width: 0 }
+            to { width: 100% }
+        }
+        @keyframes blink-caret {
+            from, to { border-color: transparent }
+            50% { border-color: black }
+        }
+        .typing-effect {
+            overflow: hidden;
+            border-right: .15em solid black;
+            white-space: nowrap;
+            animation:
+                typing 2s steps(40, end),
+                blink-caret .75s step-end infinite;
+        }
+    `;
+    document.head.appendChild(style);
+
+    // Typing effect function
+    function typeWriter(element, text, speed = 20) {
+        element.innerHTML = '';
+        let i = 0;
+        function type() {
+            if (i < text.length) {
+                element.innerHTML += text.charAt(i);
+                i++;
+                setTimeout(type, speed);
+            }
+        }
+        type();
+    }
+
+    // Submit the symptoms form
+    const symptomForm = document.getElementById('symptom-form');
+    const flashResponse = document.getElementById('flash-response');
+
+    symptomForm.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        const formData = new FormData(symptomForm);
+        const symptoms = formData.getAll("symptoms[]").map(s => s.trim());
+
+        // Validate that all symptoms are from the predefined list
+        const validSymptoms = symptoms.filter(symptom => symptomOptions.includes(symptom));
+
+        if (validSymptoms.length !== symptomLimit) {
+            alert(`Please select exactly ${symptomLimit} symptoms from the provided list.`);
+            return;
+        }
+
+        flashResponse.style.display = "block";
+        flashResponse.innerHTML = `
+            <div class="alert alert-info">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <span>Generating predictions...</span>
+            </div>
+        `;
+
+        fetch("/submit_symptoms", {
+            method: "POST",
+            body: JSON.stringify({ severity: "2", symptoms: validSymptoms }),
+            headers: { "Content-Type": "application/json" }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+                    const predictionsHtml = data.data.map(prediction => `
+                        <div class="prediction-block">
+                            <h4 id="disease-${Math.random().toString(36).substr(2, 9)}"></h4>
+                            <p id="description-${Math.random().toString(36).substr(2, 9)}"></p>
+                        </div>
+                    `).join('');
+
+                    flashResponse.innerHTML = `<div class="alert alert-success"><h4>Disease Prediction</h4>${predictionsHtml}</div>`;
+
+                    // Type out each prediction
+                    data.data.forEach((prediction, index) => {
+                        const diseaseElement = document.querySelectorAll('.prediction-block h4')[index];
+                        const descriptionElement = document.querySelectorAll('.prediction-block p')[index];
+
+                        typeWriter(diseaseElement, prediction.disease);
+
+                        setTimeout(() => {
+                            typeWriter(descriptionElement, prediction.description);
+                        }, prediction.disease.length * 50 + 500);
+                    });
+                } else {
+                    flashResponse.innerHTML = `<div class="alert alert-warning"><p>${data.error || "No disease could be predicted."}</p></div>`;
+                }
+
+                // Show warning after displaying results
+                showWarning();
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                flashResponse.innerHTML = `<div class="alert alert-danger"><p>An error occurred. Please try again.</p></div>`;
+            });
+    });
+
+    function showWarning() {
+        alert("Warning: The model and data are still under development. Please consult a healthcare professional before following any medical advice.");
+    }
+</script>
+</body>
+</html>

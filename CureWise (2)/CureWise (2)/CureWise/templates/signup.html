@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - CureWise</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-green: #22C55E;
+            --background-mint: #F0FDF4;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            color: #111827;
+            line-height: 1.5;
+            background-color: #FAFAFA;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Existing styles remain the same */
+        .navbar {
+            padding: 1rem 0;
+            background: white;
+            border-bottom: 1px solid #E5E7EB;
+        }
+        .navbar-brand {
+            font-weight: 600;
+            font-size: 1.25rem;
+            color: #111827 !important;
+        }
+        .nav-link {
+            color: #4B5563 !important;
+            font-weight: 500;
+        }
+        .btn-signup {
+            background-color: #111827;
+            border-color: #111827;
+            color: white !important;
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+        }
+        .btn-signup:hover {
+            background-color: #1F2937;
+            border-color: #1F2937;
+        }
+        .auth-container {
+            max-width: 400px;
+            margin: 80px auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .auth-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+        .auth-subtitle {
+            color: #6B7280;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        /* Enhanced password requirements styling */
+        .password-requirements {
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            color: #6B7280;
+        }
+        .requirement {
+            display: flex;
+            align-items: center;
+            margin: 0.25rem 0;
+            transition: color 0.2s;
+        }
+        .requirement.valid {
+            color: var(--primary-green);
+        }
+        .requirement::before {
+            content: "";
+            width: 14px;
+            height: 14px;
+            margin-right: 8px;
+            border-radius: 50%;
+            border: 1px solid currentColor;
+            display: inline-block;
+        }
+        .requirement.valid::before {
+            background-color: var(--primary-green);
+            border-color: var(--primary-green);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%23fff' d='M6.5 12.5l-4-4 1.5-1.5L6.5 9.5l5.5-5.5 1.5 1.5z'/%3E%3C/svg%3E");
+        }
+
+        /* Enhanced form validation styles */
+        .form-control.is-valid {
+            border-color: var(--primary-green);
+            background-image: none;
+        }
+        .form-control.is-invalid {
+            border-color: #DC2626;
+            background-image: none;
+        }
+        .invalid-feedback {
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        /* Success message enhancement */
+        .alert-success {
+            background-color: var(--background-mint);
+            border-color: var(--primary-green);
+            color: #065F46;
+        }
+
+        /* Existing styles continue... */
+        .form-label {
+            font-weight: 500;
+            color: #374151;
+        }
+        .form-control {
+            padding: 0.75rem 1rem;
+            border-color: #E5E7EB;
+        }
+        .form-control:focus {
+            border-color: var(--primary-green);
+            box-shadow: 0 0 0 1px var(--primary-green);
+        }
+        .input-icon {
+            position: relative;
+        }
+        .input-icon input {
+            padding-left: 2.5rem;
+        }
+        .input-icon svg {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9CA3AF;
+        }
+        .auth-footer {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+        .auth-footer a {
+            color: #111827;
+            text-decoration: none;
+        }
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+        .footer {
+            margin-top: auto;
+            padding: 1.5rem 0;
+            color: #6B7280;
+            font-size: 0.875rem;
+        }
+        .footer a {
+            color: #6B7280;
+            text-decoration: none;
+            margin-left: 1.5rem;
+        }
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar remains the same -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('landing') }}">CureWise</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                   <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('index') }}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('about') }}">About us</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('login') }}">Log In</a>
+                    </li>
+                    <li class="nav-item ms-3">
+                        <a class="nav-link btn btn-signup" href="{{ url_for('signup') }}">Sign Up</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="auth-container">
+            <h1 class="auth-title">Create a CureWise account</h1>
+            <p class="auth-subtitle">Enter your details to create your CureWise account</p>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST" id="signupForm">
+                {{ form.hidden_tag() }}
+                <div class="mb-3">
+                    <label for="name" class="form-label">Full Name</label>
+                    <div class="input-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        {{ form.name(class="form-control", id="name", placeholder="John Doe") }}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <div class="input-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                        </svg>
+                        {{ form.email(class="form-control", id="email", placeholder="m@example.com") }}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <div class="input-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                        {{ form.password(class="form-control", id="password") }}
+                    </div>
+                    <div class="password-requirements mt-2">
+                        <div class="requirement" id="length">At least 8 characters</div>
+                        <div class="requirement" id="uppercase">One uppercase letter</div>
+                        <div class="requirement" id="lowercase">One lowercase letter</div>
+                        <div class="requirement" id="number">One number</div>
+                        <div class="requirement" id="special">One special character (!@#$%^&*)</div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="confirm_password" class="form-label">Confirm Password</label>
+                    <div class="input-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                        {{ form.confirm_password(class="form-control", id="confirm_password") }}
+                    </div>
+                </div>
+
+                {{ form.submit(class="btn btn-signup w-100") }}
+            </form>
+
+            <div class="auth-footer">
+                <p>Already have an account? <a href="{{ url_for('login') }}">Log in</a></p>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>&copy; 2024 CureWise. All rights reserved.</div>
+                <div>
+                    <a href="#">Terms of Service</a>
+                    <a href="#">Privacy</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const password = document.getElementById('password');
+            const confirmPassword = document.getElementById('confirm_password');
+            const form = document.getElementById('signupForm');
+
+            const requirements = {
+                length: str => str.length >= 8,
+                uppercase: str => /[A-Z]/.test(str),
+                lowercase: str => /[a-z]/.test(str),
+                number: str => /[0-9]/.test(str),
+                special: str => /[!@#$%^&*]/.test(str)
+            };
+
+            function validatePassword() {
+                const value = password.value;
+                let isValid = true;
+
+                // Check each requirement
+                Object.keys(requirements).forEach(req => {
+                    const element = document.getElementById(req);
+                    if (requirements[req](value)) {
+                        element.classList.add('valid');
+                    } else {
+                        element.classList.remove('valid');
+                        isValid = false;
+                    }
+                });
+
+                // Validate confirm password
+                if (confirmPassword.value && confirmPassword.value !== value) {
+                    confirmPassword.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    confirmPassword.classList.remove('is-invalid');
+                }
+
+                return isValid;
+            }
+
+            password.addEventListener('input', validatePassword);
+            confirmPassword.addEventListener('input', validatePassword);
+
+            form.addEventListener('submit', function(e) {
+                if (!validatePassword()) {
+                    e.preventDefault();
+                    alert('Please ensure all password requirements are met and passwords match.');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
