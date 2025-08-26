@@ -1,0 +1,40 @@
+# Flask ecosystem
+flask~=3.0.3
+flask-cors~=6.0.1
+flask-mail
+flask-mysqldb
+flask-wtf
+flask-session
+wtforms~=3.2.1
+werkzeug~=3.0.3
+
+# Auth / Security
+email-validator
+pyjwt~=2.10.1
+authlib~=1.6.1
+
+# ML / AI stack
+tensorflow~=2.16.1
+keras~=3.3.3
+scikit-learn~=1.5.1
+torch
+transformers
+accelerate
+safetensors
+
+# Data handling
+pandas~=2.2.2
+numpy~=1.26.4
+python-dotenv~=0.21.0
+sqlalchemy~=2.0.34
+protobuf
+
+# OCR / NLP / File handling
+opencv-python-headless
+pypdf2~=3.0.1
+python-docx~=1.2.0
+pyspellchecker~=0.8.3
+requests~=2.32.3
+
+# Firebase (if really used)
+firebase-admin~=7.1.0

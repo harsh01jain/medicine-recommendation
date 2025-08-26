@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - CureWise</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-green: #22C55E;
+            --background-mint: #F0FDF4;
+            --text-dark: #111827;
+            --text-gray: #6B7280;
+            --card-hover: #ECFDF5;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background-mint);
+        }
+
+        .sidebar {
+            background-color: var(--background-mint);
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        .sidebar .nav-link {
+            padding: 0.75rem 1rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .sidebar .nav-link.active,
+        .sidebar .nav-link:hover {
+            background-color: var(--primary-green);
+            color: white;
+        }
+
+        .main-content {
+            padding: 2rem;
+        }
+
+        .card {
+            border: none;
+            border-radius: 0.75rem;
+            max-width: 400px;
+            margin: auto;
+            padding: 1rem;
+            background: white;
+            box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+            box-shadow: 0px 5px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-icon {
+            font-size: 3rem;
+            color: var(--primary-green);
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-weight: bold;
+            font-size: 1.25rem;
+            color: var(--text-dark);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-green);
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover {
+            background-color: #16A34A;
+            transform: scale(1.05);
+        }
+
+        .modal-header {
+            background-color: var(--primary-green);
+            color: white;
+        }
+
+        .modal-content {
+            border-radius: 1rem;
+        }
+
+        #flash-response {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 sidebar">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">History</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Settings</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/logout">Logout</a>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 main-content">
+                <h2>Welcome, {{ user_name }}!</h2>
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <i class="fas fa-pills card-icon"></i>
+                            <h5 class="card-title">Medicine Recommendation</h5>
+                            <p>Get personalized medicine recommendations based on your condition.</p>
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#symptomInputModal">Explore</button>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <i class="fas fa-notes-medical card-icon"></i>
+                            <h5 class="card-title">Disease Prediction</h5>
+                            <p>Predict potential diseases based on your symptoms.</p>
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#symptomInputModal">Explore</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Symptoms Input Modal -->
+                <div id="symptomInputModal" class="modal fade">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <!-- Modal Header -->
+                            <div class="modal-header">
+                                <h5 class="modal-title">Enter Your Symptoms</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+
+                            <!-- Modal Body -->
+                            <div class="modal-body">
+                                <form id="symptom-form" method="POST" action="/submit_symptoms">
+                                    <!-- Severity Selection -->
+                                    <div class="mb-3">
+                                        <label for="severity" class="form-label">Severity Level</label>
+                                        <select id="severity" name="severity" class="form-select" required>
+                                            <option value="mild" selected>Mild</option>
+                                            <option value="moderate">Moderate</option>
+                                            <option value="severe">Severe</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Symptom Fields -->
+                                    <div id="symptom-fields" class="mt-3">
+                                        <!-- Symptom Fields Container -->
+                                    </div>
+
+                                    <!-- Dynamic Symptom List -->
+                                    <datalist id="symptomList"></datalist>
+
+                                    <!-- Submit Button -->
+                                    <div class="text-center">
+                                        <button type="submit" class="btn btn-primary mt-3">Submit</button>
+                                    </div>
+                                </form>
+
+                                <!-- Response/Flash Message -->
+                                <div id="flash-response" class="mt-3"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main> <!-- Close the main tag correctly here -->
+        </div>
+    </div>
+
+
+    <script>
+    // Symptom Constants
+    const symptomOptions = {
+        mild: [
+            "Abdominal bloating", "Abdominal cramps", "Abdominal pain", "Acid reflux", "Belching",
+            "Blackheads", "Bleeding", "Bleeding from nose", "Blisters", "Bloating",
+            "Burning sensation", "Burping", "Cavities", "Chest pain", "Congestion", "Cracking skin",
+            "Cramping", "Crust formation", "Crusting", "Dark urine", "Dehydration", "Diarrhea",
+            "Difficulty breathing", "Difficulty eating", "Difficulty passing stool", "Difficulty swallowing",
+            "Discharge", "Discoloration", "Discolored patches", "Discomfort", "Dizziness", "Dry mouth",
+            "Dryness", "Ear pain", "Excess gas", "Fatigue", "Fever", "Flaky scalp", "Hard bumps", "Hard stool",
+            "Headache", "Hearing loss", "Heartburn", "Hoarseness", "Infection", "Inflammation", "Itching",
+            "Itchy eyes", "Itchy rash", "Itchy scalp", "Itchy welts", "Lightheadedness", "Loose stools",
+            "Loss of appetite", "Loss of taste", "Mouth sores", "Nausea", "Nits on hair", "Pain",
+            "Pain while eating", "Pain while walking", "Painful bump", "Painful lump", "Painful sores",
+            "Peeling skin", "Pimples", "Prickly sensation", "Pus formation", "Rash", "Rectal pain", "Red bumps",
+            "Red edges", "Red patches", "Red rash", "Redness", "Rough texture", "Runny nose", "Scaling",
+            "Scalp redness", "Scarring", "Scratching", "Sensitivity", "Sinus pressure", "Sneezing", "Soreness",
+            "Straining", "Stuffy nose", "Sweating", "Swelling", "Tenderness", "Thickened skin", "Thirst",
+            "Toothache", "Urgency", "Vomiting", "Warmth", "Watery discharge", "Watery eyes", "White patches",
+            "Whiteheads"
+        ],
+           moderate: [
+        "Abdominal bloating", "Abdominal cramps", "Abdominal discomfort", "Abdominal pain",
+        "Abdominal rigidity", "Abnormal discharge", "Acidity", "Anemia", "Anxiety",
+        "Appetite loss", "Back pain", "Bladder discomfort", "Bleeding from gums",
+        "Blistered rash on body", "Blistering", "Bloating", "Blocked nose",
+        "Blood in the stool", "Blood in urine", "Blood/mucus in stool", "Bloody stool",
+        "Blurred and distorted vision", "Body aches", "Body rash on body",
+        "Bone deformities", "Brittle nails", "Bumps", "Burning",
+        "Burning during urination", "Burning sensation", "Burning sensation during urination",
+        "Burrow tracks", "Chest pain", "Chills", "Chronic swelling", "Cold extremities",
+        "Cold hands and feets", "Congestion", "Conjunctivitis", "Constipation",
+        "Continuous feel of urine", "Continuous sneezing", "Cough", "Cracks in skin",
+        "Cramps", "Crusting soreness", "Dark urine", "Darkened skin", "Dehydration",
+        "Delayed development", "Delayed growth", "Diarrhoea", "Diarrhoea with mucus",
+        "Difficulty in breathing", "Difficulty moving", "Difficulty swallowing",
+        "Digestive discomfort", "Digestive upset", "Discharge", "Discolored patches",
+        "Discomfort", "Discomfort during urination", "Discomfort in lower abdomen",
+        "Disfigured skin", "Dizziness", "Easy easy bruising of skin of skin",
+        "Enlarged abdomen", "Enlarged lymph nodes", "Enlarged spleen", "Excessive hunger",
+        "Extreme fatigue and weakness", "Eye pain", "Eye problems", "Eye redness",
+        "Facial bone deformities", "Facial pain", "Facial swelling", "Facial tenderness",
+        "Fatigue and weakness", "Fatigue and weakness and weakness",
+        "Feeling of fullness", "Fever", "Flatulence", "Fluid filled blisters",
+        "Foul odor", "Foul smell of urine", "Foul smelling discharge", "Frequent diarrhoea",
+        "Frequent urge to urinate", "Frequent urination", "Genetics", "Genital irritation",
+        "Genital redness", "Genital soreness", "Genital swelling", "Greenish discharge",
+        "Headache", "High fever", "Hip pain in joints", "Indigestion",
+        "Inflammation in legs", "Intense itching", "Intestinal discomfort",
+        "Iron deficiency", "Iron deficiency anemia", "Irregular sugar level", "Irritability",
+        "Irritation in anus", "Itchiness", "Itching", "Itchy skin",
+        "Itchy skin red rash on body", "Itchy skin spots", "Jaundice (yellowish skin)",
+        "Jaw cramps", "Jaw pain", "Joint aches", "Joint inflammation", "Joint stiffness",
+        "Joint swelling", "Kidney dysfunction", "Knee pain", "Koplik's spots in mouth",
+        "Lack of concentration", "Lesions", "Lethargy", "Light or dark patches", "Lockjaw",
+        "Loose stools", "Loss of appetite", "Loss of coordination and balance",
+        "Loss of eyebrows", "Loss of sensation", "Low grade fever", "Lymphedema",
+        "Malnutrition", "Mild abdominal pain", "Mild fever", "Mood swings",
+        "Mouth soreness", "Movement stiffness", "Muscle aches", "Muscle pain",
+        "Muscle spasms", "Muscle stiffness", "Muscle weakness", "Nasal congestion",
+        "Nausea", "Neck pain", "Nerve damage", "Nodules", "Numb fingers/toes",
+        "Numbness", "Open soreness", "Pain during bowel movements",
+        "Pain during intercourse", "Pain during urination", "Pain in anal region",
+        "Pain in cheekbones", "Pain in joints", "Pain in limbs", "Pain radiating to back",
+        "Painful muscle spasms", "Painful urination", "Painful walking",
+        "Painless soreness on genitals", "Painless ulcer", "Pale complexion",
+        "Pale skin", "Passing gases, farting", "Pelvic discomfort", "Pelvic pain",
+        "Pelvic pain or pressure or pressure", "Pink rash on body",
+        "Pink/red rash on body", "Poor appetite", "Postnasal drip", "Pressure around nose/eyes",
+        "Rapid heartbeat", "Rash on body", "Rash on body in clusters",
+        "Rash on body on limbs", "Rash on body on palms",
+        "Rash on body spreading from head to body",
+        "Rash on body starting on chest/back", "Red eyes", "Red rash on body",
+        "Red soreness", "Red spots with white centers", "Redness",
+        "Redness and soreness", "Reduced smell", "Restlessness", "Runny nose",
+        "Sensation loss", "Severe fatigue and weakness", "Severe itching (worse at night)",
+        "Severe muscle spasms", "Severe pain in joints", "Shivering",
+        "Shortness of breath", "Silver like dusting", "Sinus pressure",
+        "Skin cracks", "Skin lesions", "Skin peeling", "Skin rash on body",
+        "Skin soreness", "Skin thickening", "Skin turning yellow", "Skin ulcers",
+        "Slight fever", "Small blisters", "Small bumps", "Small dents in nails",
+        "Small red bumps", "Small red spots", "Sore throat", "Soreness",
+        "Spinning movements", "Stiffness in neck/abdomen", "Stomach pain",
+        "Stomach pain and cramps", "Sudden fever", "Sunken eyes", "Sweating",
+        "Swelling below the ears", "Swelling in groin", "Swelling in jaw",
+        "Swelling in limbs", "Swelling joints", "Swollen cheeks", "Swollen glands",
+        "Swollen legs", "Swollen lymph nodes", "Swollen lymph nodes behind ears",
+        "Swollen salivary glands", "Thick discharge", "Thick skin",
+        "Thick white discharge", "Thickened skin", "Trouble breathing",
+        "Ulcers on tongue", "Vaginal itching", "Vaginal soreness",
+        "Visible tapeworm segments in stool", "Visible worms in stool",
+        "Vision changes", "Vision loss", "Vomiting", "Watering from eyes",
+        "Weakness", "Weakness in limbs", "Weight gain", "Weight loss",
+        "Wheezing", "White coating on tongue", "White patches in mouth",
+        "Yellow eyes", "Yellowgreen discharge", "Yellowish discharge",
+        "Yellowish skin"
+    ],
+          severe: [
+        "Abdominal pain", "Abnormal bleeding", "Agitation", "Back pain", "Black lesions",
+        "Bleeding", "Bleeding gums", "Bloating", "Blood in urine", "Bluish skin",
+        "Blurred vision", "Bone pain", "Breast lump", "Breast pain", "Bruising",
+        "Change in breast shape", "Change in mole size", "Chest discomfort",
+        "Chest pain", "Chills", "Confusion", "Cough", "Crusting", "Dark urine",
+        "Diarrhea", "Difficulty breathing", "Difficulty swallowing",
+        "Difficulty urinating", "Discharge", "Dizziness", "Easy bruising",
+        "Excessive bleeding", "Facial pain", "Facial swelling", "Fatigue",
+        "Fever", "Fractures", "Frequent infections", "Frequent nosebleeds",
+        "Frequent urination", "Hallucinations", "Headache", "Heartburn",
+        "Heavy periods", "Hoarseness", "Irregular heartbeat", "Itching",
+        "Jaundice", "Joint pain", "Loss of appetite", "Loss of movement",
+        "Loss of taste", "Lower abdominal pain", "Lumps under skin",
+        "Mouth ulcers", "Muscle aches", "Muscle pain", "Muscle weakness",
+        "Nasal congestion", "Nasal discharge", "Nausea", "Night sweats",
+        "Nipple discharge", "Nosebleeds", "Numbness", "Pain",
+        "Pain during intercourse", "Pain episodes", "Pain in arms",
+        "Painful urination", "Pale skin", "Paralysis", "Pelvic pain",
+        "Rapid heart rate", "Rash", "Red spots on skin", "Redness",
+        "Reduced mobility", "Scaling", "Seizures", "Shortness of breath",
+        "Skin dimpling", "Skin lesions", "Skin sores", "Slurred speech",
+        "Sore throat", "Stiff neck", "Sweating", "Swelling",
+        "Swelling in hands and feet", "Swelling in legs", "Swollen abdomen",
+        "Swollen glands", "Swollen legs", "Swollen lymph nodes", "Tenderness",
+        "Vision loss", "Vision problems", "Vomiting", "Weakness", "Weight loss"
+    ]
+    };
+
+
+
+// Limits for each severity
+const symptomLimits = {
+    mild: 3,
+    moderate: 4,
+    severe: 6
+};
+
+// Populate Symptom Fields Based on Selected Severity
+function updateSymptomFields(severity) {
+    const allSymptoms = symptomOptions[severity];
+    const limit = symptomLimits[severity];
+
+    const symptomFields = document.getElementById('symptom-fields');
+    symptomFields.innerHTML = ''; // Clear previous fields
+
+    for (let i = 0; i < limit; i++) {
+        // Generate a datalist for searchable options
+        const datalistId = `symptom-datalist-${i}`;
+        const datalistHTML = `
+            <datalist id="${datalistId}">
+                ${allSymptoms.map(symptom => `<option value="${symptom}">${symptom}</option>`).join('')}
+            </datalist>
+        `;
+
+        // Add input fields with datalist
+        symptomFields.insertAdjacentHTML('beforeend', `
+            <div class="mb-3">
+                <label for="symptom${i + 1}" class="form-label">Symptom ${i + 1}</label>
+                <input type="text" class="form-control" id="symptom${i + 1}" name="symptoms[]"
+                       list="${datalistId}" placeholder="Search and select a symptom" required>
+                ${datalistHTML}
+            </div>
+        `);
+    }
+}
+
+// React to Severity Changes
+document.getElementById('severity').addEventListener('change', (event) => {
+    const severity = event.target.value.trim().toLowerCase(); // Normalize severity
+    if (['mild', 'moderate', 'severe'].includes(severity)) {
+        updateSymptomFields(severity); // Update fields based on normalized severity
+    } else {
+        alert("Invalid severity selected. Please select 'mild', 'moderate', or 'severe'.");
+    }
+});
+
+// Initialize Fields on Page Load
+document.addEventListener('DOMContentLoaded', () => {
+    updateSymptomFields('mild'); // Default to 'mild'
+});
+
+// Submit the Symptoms Form
+const symptomForm = document.getElementById('symptom-form');
+const flashResponse = document.getElementById('flash-response');
+
+symptomForm.addEventListener("submit", function (event) {
+    event.preventDefault(); // Prevent default submission
+
+    const formData = new FormData(symptomForm);
+    let severity = formData.get("severity").trim().toLowerCase(); // Normalize severity
+    const symptoms = formData.getAll("symptoms[]").map(s => s.trim()); // Trim all symptoms
+
+    // Validate severity
+    if (!['mild', 'moderate', 'severe'].includes(severity)) {
+        alert("Invalid severity selected. Please select 'mild', 'moderate', or 'severe'.");
+        return;
+    }
+
+    // Validate if all symptoms are valid (from the list)
+    const validSymptoms = symptomOptions[severity];
+    const areValid = symptoms.every(symptom => validSymptoms.includes(symptom));
+
+    if (!areValid) {
+        alert("Please select symptoms only from the list.");
+        return;
+    }
+
+    // Debug: Log form data
+    console.log("Submitted Data:", { severity, symptoms });
+
+    // Update severity to match backend mapping
+    const severityMapping = { mild: "1", moderate: "2", severe: "3" };
+    severity = severityMapping[severity]; // Map severity
+    formData.set("severity", severity); // Update severity in form data
+
+    // Show loading animation
+    flashResponse.style.display = "block";
+    flashResponse.innerHTML = `
+        <div class="alert alert-info">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <span>Generating predictions...</span>
+        </div>
+    `;
+
+    // Simulate delay for fetching predictions
+    setTimeout(() => {
+        // Fetch predictions from the backend
+        fetch("/submit_symptoms", {
+            method: "POST",
+            body: formData,
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log("Response from backend:", data);
+
+                // Corrected to handle the response structure properly
+                if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+                    // Extract predictions
+                    const predictionsHtml = data.data.map(prediction => {
+                        // Ensure medicines are displayed correctly
+                        const medicines = Array.isArray(prediction.medicines)
+                            ? prediction.medicines.join(', ')
+                            : prediction.medicines || "No medicines available"; // Handle string or undefined medicines
+
+                        return `
+                            <div class="prediction-block">
+                                <h4>${prediction.disease}</h4>
+                                <p><strong>Description:</strong> ${prediction.description}</p>
+                                <p><strong>Diet Plan:</strong> ${prediction.diet}</p>
+                                <p><strong>Workout Plan:</strong> ${prediction.workout}</p>
+                                <p><strong>Medicines:</strong> ${medicines}</p>
+                            </div>
+                        `;
+                    }).join(''); // Combine predictions HTML
+
+                    // Animate predictions letter by letter
+                    const animationDelay = 20; // Speed of letter animation
+                    flashResponse.innerHTML = `
+                        <div class="alert alert-success">
+                            <h4>Disease Prediction</h4>
+                            <div id="animated-predictions"></div>
+                        </div>
+                    `;
+
+                    const animatedContainer = document.getElementById('animated-predictions');
+                    let fullText = predictionsHtml; // Combine predictions
+                    let currentText = "";
+                    let index = 0;
+
+                    function animateText() {
+                        if (index < fullText.length) {
+                            currentText += fullText[index];
+                            animatedContainer.innerHTML = currentText;
+                            index++;
+                            setTimeout(animateText, animationDelay); // Recursive call for animation
+                        }
+                    }
+
+                    animateText();
+                } else {
+                    // Handle case where no confident predictions were made
+                    flashResponse.style.display = "block";
+                    flashResponse.innerHTML = `
+                        <div class="alert alert-warning">
+                            <p>${data.error || "No disease could be confidently predicted based on the symptoms."}</p>
+                        </div>
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                flashResponse.style.display = "block";
+                flashResponse.innerHTML = `
+                    <div class="alert alert-danger">
+                        <p>An error occurred: ${error.message}</p>
+                    </div>
+                `;
+            });
+    }, 4000); // Delay for 4 seconds
+});
+
+</script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CureWise AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-green: #22C55E;
+            --background-mint: #F0FDF4;
+            --text-dark: #111827;
+            --text-gray: #6B7280;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background-mint);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 0.5rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            color: var(--primary-green);
+            font-weight: bold;
+            font-size: 1.25rem;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo:hover {
+            color: var(--primary-green);
+        }
+
+        .main-content {
+            background-image: url('static/description.jpg');
+            background-size: cover;
+            background-position: center;
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 720px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+        }
+
+        .development-notice {
+            background-color: rgba(34, 197, 94, 0.1);
+            border-left: 4px solid var(--primary-green);
+            padding: 1rem;
+            margin-bottom: 2rem;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .development-notice h2 {
+            color: var(--text-dark);
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .development-notice p {
+            color: var(--text-gray);
+            margin-bottom: 0;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .info-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.7);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            font-size: 24px;
+            color: #000;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1000;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .info-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        #prompt {
+            width: 100%;
+            height: 120px;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            background-color: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+            font-family: 'Inter', sans-serif;
+            resize: vertical;
+            transition: all 0.3s ease;
+            outline: none;
+            spellcheck: false;
+        }
+
+        #prompt:focus {
+            border-color: var(--primary-green);
+            box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
+        }
+
+        #generate-btn {
+            width: 100%;
+            background-color: var(--primary-green);
+            border: none;
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        #generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
+        }
+
+        #response-container {
+            display: none;
+            margin-top: 2rem;
+            max-height: 600px;
+            overflow-y: auto;
+            font-family: 'Inter', sans-serif;
+        }
+
+        #response-container h5 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary-green);
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        #response {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.85));
+            padding: 2rem;
+            border-radius: 16px;
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text-dark);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .typing-animation {
+            display: inline-block;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: typeIn 0.3s forwards;
+        }
+
+        @keyframes typeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #response code {
+            background-color: rgba(34, 197, 94, 0.1);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.95em;
+        }
+
+        #response pre code {
+            display: block;
+            padding: 1rem;
+            margin: 1rem 0;
+            background-color: rgba(17, 24, 39, 0.05);
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, rgba(34, 197, 94, 0.2) 0%, rgba(34, 197, 94, 0.1) 100%);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+        }
+
+        .loading-dots {
+            display: inline-flex;
+            gap: 0.5rem;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        .loading-dots span {
+            width: 8px;
+            height: 8px;
+            background-color: var(--primary-green);
+            border-radius: 50%;
+            animation: bounce 0.5s infinite alternate;
+        }
+
+        .loading-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .loading-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes bounce {
+            to {
+                transform: translateY(-8px);
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(34, 197, 94, 0.5);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(34, 197, 94, 0.7);
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <a href="#" class="logo">
+            <i class="fas fa-staff-snake"></i>CureWise
+        </a>
+        <a href="{{ url_for('index') }}" class="btn btn-outline-primary">Back to Home</a>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="development-notice">
+                <h2>Welcome to CureWise AI</h2>
+                <p>CureWise AI is an innovative medical assistance platform currently in development. Our system is designed to help healthcare professionals with medical information processing, research analysis, and clinical decision support. As we're in the development phase, all outputs should be reviewed by qualified medical professionals and used for reference purposes only.</p>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <form id="chatbot-form">
+                        <div class="mb-3">
+                            <label for="prompt" class="form-label">Enter your medical query:</label>
+                            <textarea id="prompt" class="form-control" placeholder="Enter your medical query..." spellcheck="false"></textarea>
+                        </div>
+                        <button type="submit" id="generate-btn" class="btn btn-primary">Generate</button>
+                    </form>
+                    <div id="response-container" class="mt-4" style="display: none;">
+                        <h5>Generated Response</h5>
+                        <pre id="response" class="bg-light p-3 rounded"></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <button class="info-button" onclick="showWarning()">i</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+  // Utility function to get a query parameter value by name.
+  function getQueryParam(param) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(param);
+  }
+
+  // On DOM load, auto-fill the prompt field based on the query parameter and auto-click the Generate button.
+  document.addEventListener("DOMContentLoaded", function() {
+    const promptParam = getQueryParam("prompt");
+    if (!promptParam) return;
+
+    const lowerPrompt = promptParam.toLowerCase().trim();
+    const promptField = document.getElementById("prompt");
+    let autoPrompt = "";
+
+    // If the prompt already starts with the full expected phrases, use it as is.
+    if (
+      lowerPrompt.startsWith("provide nutrition plan for") ||
+      lowerPrompt.startsWith("provide medicine recommendation for") ||
+      lowerPrompt.startsWith("provide workout plan for") ||
+      lowerPrompt.startsWith("provide description for")
+    ) {
+      autoPrompt = decodeURIComponent(promptParam);
+    }
+    // Otherwise, build the prompt based on shorthand prefixes.
+    else if (lowerPrompt.startsWith("diet:")) {
+      autoPrompt = "Provide nutrition plan for " + promptParam.split(":")[1].trim();
+    } else if (lowerPrompt.startsWith("disease:")) {
+      autoPrompt = "Provide medicine recommendation for " + promptParam.split(":")[1].trim();
+    } else if (lowerPrompt.startsWith("medicine:")) {
+      autoPrompt = "Provide medicine recommendation for " + promptParam.split(":")[1].trim();
+    } else if (lowerPrompt.startsWith("symptom:")) {
+      autoPrompt = "Provide diagnosis for " + promptParam.split(":")[1].trim();
+    } else if (lowerPrompt.startsWith("workout:")) {
+      autoPrompt = "Provide workout plan for " + promptParam.split(":")[1].trim();
+    } else {
+      // Fallback: simply decode the provided prompt.
+      autoPrompt = decodeURIComponent(promptParam);
+    }
+
+    if (promptField) {
+      promptField.value = autoPrompt;
+      console.log("Auto-filled prompt:", autoPrompt);
+      // Auto-click the Generate button if the prompt field is non-empty.
+      if (promptField.value.trim() !== "") {
+        setTimeout(() => {
+          document.getElementById("generate-btn").click();
+        }, 500);
+      }
+    }
+  });
+
+  // Chatbot form submission handler.
+  // Chatbot form submission handler.
+document.getElementById('chatbot-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const promptValue = document.getElementById("prompt").value;
+  if (!promptValue) {
+    alert("Please enter a medical question.");
+    return;
+  }
+
+  const responseContainer = document.getElementById("response-container");
+  const responseElement = document.getElementById("response");
+  const disclaimerElement = document.getElementById("medical-disclaimer");
+
+  // Show loading state with a spinner.
+  responseContainer.style.display = "block";
+  responseElement.innerHTML = `
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Consulting medical knowledge base...</span>
+    </div>`;
+
+  fetch("/generate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ "prompt": promptValue })
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.error) {
+        responseElement.className = 'alert alert-warning';
+        typeWriter(responseElement, data.error);
+        if (disclaimerElement) disclaimerElement.style.display = 'none';
+      } else {
+        responseElement.className = 'medical-response';
+        let generatedText = data.response ||
+          (data.choices && data.choices.length > 0 ? data.choices[0].text : '');
+
+        // Clean up the response text.
+        generatedText = generatedText
+          .replace(/<think>[\s\S]*?<\/think>/g, "")
+          .trim();
+
+        // Type out the medical response.
+        typeWriter(responseElement, generatedText);
+
+        // Show medical disclaimer if present.
+        if (disclaimerElement && data.disclaimer) {
+          disclaimerElement.style.display = 'block';
+          disclaimerElement.innerHTML = `
+            <div class="alert alert-info mt-3">
+              <i class="fas fa-info-circle"></i> ${data.disclaimer}
+            </div>`;
+        }
+
+        // Add verified medical content badge if applicable.
+        if (data.context_verified) {
+          const verifiedBadge = document.createElement('div');
+          verifiedBadge.className = 'verified-medical-badge';
+          verifiedBadge.innerHTML = `
+            <i class="fas fa-check-circle"></i> Verified Medical Information`;
+          responseContainer.insertBefore(verifiedBadge, responseElement);
+        }
+      }
+    })
+    .catch(error => {
+      console.error("Error fetching medical response:", error);
+      responseElement.className = 'alert alert-danger';
+      typeWriter(responseElement, 'An error occurred while retrieving medical information. Please try again.');
+      if (disclaimerElement) disclaimerElement.style.display = 'none';
+    });
+});
+
+// Typewriter effect function for displaying response text.
+function typeWriter(element, text, speed = 10) {
+  let chars = text.split('');
+  element.innerHTML = '';
+  chars.forEach((char, index) => {
+    setTimeout(() => {
+      const span = document.createElement('span');
+      span.textContent = char;
+      span.className = 'typing-animation medical-text';
+      element.appendChild(span);
+    }, speed * index);
+  });
+}
+    </script>
+</body>
+</html>
